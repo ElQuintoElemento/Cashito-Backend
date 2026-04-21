@@ -126,3 +126,4 @@ C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoB
 C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\CashitoBackend.pdb
 C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\CashitoBackend.genruntimeconfig.cache
 C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\ref\CashitoBackend.dll
+C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\CashitoBackend.sourcelink.json
