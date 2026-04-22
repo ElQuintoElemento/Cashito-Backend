@@ -1,3 +1,8 @@
+using CashitoBackend.Clients.Application.Application.CommandServices;
+using CashitoBackend.Clients.Application.Application.QueryServices;
+using CashitoBackend.Clients.Domain.Repositories;
+using CashitoBackend.Clients.Domain.Services;
+using CashitoBackend.Clients.Infrastructure.Persistence.EFC.Repositories;
 using CashitoBackend.IAM.Application.Internal.CommandServices;
 using CashitoBackend.IAM.Application.Internal.OutboundServices;
 using CashitoBackend.IAM.Application.Internal.QueryServices;
@@ -117,6 +122,12 @@ builder.Services.AddSwaggerGen(options =>
 
 
 // Dependency Injection
+
+// Clients Bounded Context
+
+builder.Services.AddScoped<IClientRepository, ClientRepository>();
+builder.Services.AddScoped<IClientCommandService, ClientCommandService>();
+builder.Services.AddScoped<IClientQueryService, ClientQueryService>();
 
 // Shared Bounded Context
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
