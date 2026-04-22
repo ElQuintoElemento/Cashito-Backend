@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CashitoBackend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8a359abaa9a9fab6ef291b2b44bd0bfec5c3e300")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1fc0c881d164bedd94432969821ae1832a48a0d3")]
 [assembly: System.Reflection.AssemblyProductAttribute("CashitoBackend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CashitoBackend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

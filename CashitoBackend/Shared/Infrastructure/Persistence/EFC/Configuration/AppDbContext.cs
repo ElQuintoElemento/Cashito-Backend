@@ -39,21 +39,6 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
                 )
                 .HasColumnName("email")
                 .HasMaxLength(255);
-
-            e.HasMany(u => u.Roles)
-                .WithMany()
-                .UsingEntity(j => j.ToTable("user_roles"));
-        });
-
-        // =========================
-        // IAM - ROLES
-        // =========================
-        builder.Entity<Role>(e =>
-        {
-            e.HasKey(r => r.Id);
-            e.Property(r => r.Id).ValueGeneratedOnAdd();
-
-            e.Property(r => r.Name).IsRequired();
         });
 
         // =========================

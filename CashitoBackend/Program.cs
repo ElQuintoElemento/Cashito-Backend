@@ -1,5 +1,4 @@
 using CashitoBackend.IAM.Application.Internal.CommandServices;
-using CashitoBackend.IAM.Application.Internal.EventHandlers;
 using CashitoBackend.IAM.Application.Internal.OutboundServices;
 using CashitoBackend.IAM.Application.Internal.QueryServices;
 using CashitoBackend.IAM.Domain.Repositories;
@@ -136,11 +135,6 @@ builder.Services.AddScoped<IUserQueryService, UserQueryService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IHashingService, HashingService>();
 builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
-builder.Services.AddScoped<IRoleCommandService, RoleCommandService>();
-builder.Services.AddScoped<IRoleQueryService, RoleQueryService>();
-builder.Services.AddHostedService<SeedRolesHostedService>();
-
 
 // ───────────── Build & DB ensure ─────────────a
 var app = builder.Build();
@@ -150,6 +144,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
 }
+
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 // ───────────── HTTP pipeline ─────────────
 app.UseSwagger();
@@ -166,8 +162,6 @@ app.UseRequestAuthorization();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 app.MapControllers();
 app.Run();
