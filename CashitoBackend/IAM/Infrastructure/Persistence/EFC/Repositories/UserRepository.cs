@@ -27,7 +27,6 @@ public class UserRepository(AppDbContext context) : BaseRepository<User>(context
     {
         return await Context.Set<User>()
                      .IgnoreQueryFilters()
-                     .Include(u => u.Roles)
                      .FirstOrDefaultAsync(user => user.Username == username);
     }
 
@@ -49,17 +48,13 @@ public class UserRepository(AppDbContext context) : BaseRepository<User>(context
     public new async Task<User?> FindByIdAsync(long id)
     {
         return await Context.Set<User>()
-                     .Include(u => u.Roles)
                      .FirstOrDefaultAsync(u => u.Id == id);
     }
-
-    // Listado con roles (útil para endpoints de listado de usuarios)
+    
     public new async Task<IEnumerable<User>> ListAsync()
     {
         return await Context.Set<User>()
-            .Include(u => u.Roles)
-            .Where(u => u.Active) // No compares con 1 si es bool
+            .Where(u => u.Active) // No compara con 1 si es bool
             .ToListAsync();
     }
-    
 }

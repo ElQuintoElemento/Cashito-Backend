@@ -1,15 +1,16 @@
 using System.Net.Mime;
 using CashitoBackend.IAM.Domain.Services;
-using CashitoBackend.IAM.Infrastructure.Pipeline.Middleware.Attributes;
 using CashitoBackend.IAM.Interfaces.REST.Resources;
 using CashitoBackend.IAM.Interfaces.REST.Transform;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace CashitoBackend.IAM.Interfaces.REST;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/auth")]
 [Produces(MediaTypeNames.Application.Json)]
 [SwaggerTag("Available Authentication endpoints")]
 public class AuthenticationController(IUserCommandService userCommandService, ILogger<AuthenticationController> logger) : ControllerBase
@@ -75,5 +76,22 @@ public class AuthenticationController(IUserCommandService userCommandService, IL
             logger.LogError(ex, "Error during sign-up");
             return BadRequest(new { error = ex.Message, path = HttpContext.Request.Path });
         }
+    }
+    
+    [HttpGet("me")]
+    [Authorize]
+    public IActionResult Me()
+    {
+        var userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? User.FindFirst("sub")?.Value;
+        var username = User.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value ?? User.FindFirst("unique_name")?.Value;
+
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized();
+
+        return Ok(new
+        {
+            id = userId,
+            username = username
+        });
     }
 }

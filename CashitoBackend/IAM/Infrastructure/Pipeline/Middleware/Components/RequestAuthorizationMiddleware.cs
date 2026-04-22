@@ -1,7 +1,7 @@
+using System.IdentityModel.Tokens.Jwt;
 using CashitoBackend.IAM.Application.Internal.OutboundServices;
-using CashitoBackend.IAM.Domain.Model.Queries;
 using CashitoBackend.IAM.Domain.Services;
-using CashitoBackend.IAM.Infrastructure.Pipeline.Middleware.Attributes;
+using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
 namespace CashitoBackend.IAM.Infrastructure.Pipeline.Middleware.Components;
@@ -33,7 +33,6 @@ public class RequestAuthorizationMiddleware
      */
     public async Task InvokeAsync(
         HttpContext context,
-        IUserQueryService userQueryService,
         ITokenService tokenService)
     {
         
@@ -47,18 +46,14 @@ public class RequestAuthorizationMiddleware
         // skip authorization if endpoint is decorated with [AllowAnonymous] attribute
         var endpoint = context.GetEndpoint();
         var allowAnonymous = endpoint?.Metadata
-            .GetOrderedMetadata<AllowAnonymousAttribute>()
-            .Any() == true;
-        Console.WriteLine($"Allow Anonymous is {allowAnonymous}");
+            .GetMetadata<AllowAnonymousAttribute>() != null;
         
         if (allowAnonymous)
         {
-            Console.WriteLine("Skipping authorization");
             // [AllowAnonymous] attribute is set, so skip authorization
             await _next(context);
             return;
         }
-        Console.WriteLine("Entering authorization");
         // get token from request header
         var token = context.Request.Headers["Authorization"]
             .FirstOrDefault()?
@@ -68,41 +63,44 @@ public class RequestAuthorizationMiddleware
 
         if (string.IsNullOrEmpty(token))
         {
-            throw new UnauthorizedAccessException("El encabezado Authorization es obligatorio");
+            throw new UnauthorizedAccessException("Authorization header is required");
         }
         
         // validate token
-        var claims = await tokenService.ValidateToken(token);
+        var jwt = await tokenService.ValidateToken(token);
 
-        // if token is invalid then throw exception
-        if (claims == null)
+// if token is invalid then throw exception
+        if (jwt == null)
             throw new UnauthorizedAccessException("Token inválido o expirado.");
+
+        var userId = jwt.Claims
+            .First(x => x.Type == JwtRegisteredClaimNames.Sub)
+            .Value;
         
-        var userId = claims.Value;
-        
-        var user = await userQueryService.Handle(
-            new GetUserByIdQuery(userId)
-        );
-        
+        var username = jwt.Claims
+            .FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.UniqueName)
+            ?.Value;
+
         var identityClaims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Username)
+            new Claim(JwtRegisteredClaimNames.Sub, userId),
+            new Claim("sub", userId),
+            new Claim(ClaimTypes.NameIdentifier, userId)
         };
         
-        identityClaims.AddRange(
-            user.Roles.Select(r =>
-                new Claim(ClaimTypes.Role, r.Name.ToString())
-            )
-        );
+        if (!string.IsNullOrWhiteSpace(username))
+        {
+            identityClaims.Add(new Claim(JwtRegisteredClaimNames.UniqueName, username));
+            identityClaims.Add(new Claim("unique_name", username));
+            identityClaims.Add(new Claim(ClaimTypes.Name, username));
+        }
 
         context.User = new ClaimsPrincipal(
-            new ClaimsIdentity(identityClaims, "Custom")
+            new ClaimsIdentity(identityClaims, "jwt")
         );
 
-        _logger.LogInformation("User authenticated: {UserId}", user.Id);
+        _logger.LogInformation("User authenticated: {UserId}", userId);
 
         await _next(context);
-        
     }
 }

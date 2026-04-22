@@ -4,11 +4,14 @@ namespace CashitoBackend.Shared.Infrastructure.Interfaces.ASP.Extensions
 {
 public static class ClaimsPrincipalExtensions
 {
-    public static long GetUserId(this ClaimsPrincipal principal)
+    public static int GetUserId(this ClaimsPrincipal principal)
     {
         var claim = principal.FindFirst(ClaimTypes.NameIdentifier);
-        return claim != null ? long.Parse(claim.Value) : 0;
+
+        if (claim == null)
+            throw new UnauthorizedAccessException("User ID not found in token");
+
+        return int.Parse(claim.Value);
     }
-    
 }
 }

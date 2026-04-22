@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using CashitoBackend.IAM.Domain.Model.Entities;
 using CashitoBackend.Shared.Domain.Model.Entities;
 using CashitoBackend.Shared.Domain.Model.ValueObjects;
 
@@ -24,8 +23,6 @@ public class User : AuditableAggregateRoot
     public string? LastName { get; private set; }
 
     public bool Active { get; private set; } = true;
-
-    public ICollection<Role> Roles { get; private set; } = new HashSet<Role>();
 
     // Constructor para EF
     private User() { }
@@ -67,18 +64,5 @@ public class User : AuditableAggregateRoot
         Active = false;
         return this;
     }
-
-    public User AddRole(Role role)
-    {
-        Roles.Add(role);
-        return this;
-    }
-
-    public User AddRoles(IEnumerable<Role> roles)
-    {
-        foreach (var role in roles)
-            Roles.Add(role);
-
-        return this;
-    }
+    
 }

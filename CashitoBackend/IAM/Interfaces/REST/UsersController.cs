@@ -1,9 +1,9 @@
 using System.Net.Mime;
 using CashitoBackend.IAM.Domain.Model.Queries;
-using CashitoBackend.IAM.Domain.Model.Commands;
 using CashitoBackend.IAM.Domain.Services;
 using CashitoBackend.IAM.Interfaces.REST.Resources;
 using CashitoBackend.IAM.Interfaces.REST.Transform;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -59,38 +59,27 @@ public class UsersController(
     }
 
     // =========================
-    // CREATE USER (PUBLIC / SIGNUP ADMIN STYLE)
-    // =========================
-    [HttpPost]
-    [AllowAnonymous]
-    [SwaggerOperation(
-        Summary = "Create user",
-        OperationId = "CreateUser")]
-    public async Task<IActionResult> Create([FromBody] CreateUserResource resource)
-    {
-        var command = CreateUserCommandFromResourceAssembler.ToCommandFromResource(resource);
-
-        var user = await userCommandService.Handle(command);
-
-        return Created(
-            $"/api/v1/users/{user.Id}",
-            UserResourceFromEntityAssembler.ToResourceFromEntity(user)
-        );
-    }
-
-    // =========================
-    // UPDATE USER (ADMIN ONLY VIA ROLE)
+    // UPDATE USER
     // =========================
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin")]
     [SwaggerOperation(
         Summary = "Update user",
         OperationId = "UpdateUser")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateUserResource resource)
     {
+        var sub = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? User.FindFirst("sub")?.Value;
+        if (string.IsNullOrWhiteSpace(sub) || !int.TryParse(sub, out var currentUserId))
+            return Unauthorized();
+        
+        if (currentUserId != id)
+            return Forbid();
+        
         var command = UpdateUserCommandFromResourceAssembler.ToCommandFromResource(id, resource);
 
         var user = await userCommandService.Handle(command);
+
+        if (user == null)
+            return NotFound();
 
         return Ok(UserResourceFromEntityAssembler.ToResourceFromEntity(user));
     }
@@ -99,7 +88,6 @@ public class UsersController(
     // CHANGE PASSWORD
     // =========================
     [HttpPost("{id:int}/change-password")]
-    [Authorize]
     [SwaggerOperation(
         Summary = "Change user password",
         OperationId = "ChangePassword")]
@@ -107,6 +95,13 @@ public class UsersController(
         int id,
         [FromBody] ChangePasswordResource resource)
     {
+        var sub = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? User.FindFirst("sub")?.Value;
+        if (string.IsNullOrWhiteSpace(sub) || !int.TryParse(sub, out var currentUserId))
+            return Unauthorized();
+        
+        if (currentUserId != id)
+            return Forbid();
+        
         var command = ChangePasswordCommandFromResourceAssembler.ToCommandFromResource(id, resource);
 
         var result = await userCommandService.Handle(command);
@@ -116,20 +111,5 @@ public class UsersController(
             message = "Password updated successfully",
             userId = result.Id
         });
-    }
-
-    // =========================
-    // DELETE USER (ADMIN ONLY VIA ROLE)
-    // =========================
-    [HttpDelete("{id:int}")]
-    [Authorize(Roles = "Admin")]
-    [SwaggerOperation(
-        Summary = "Delete user",
-        OperationId = "DeleteUser")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var user = await userCommandService.Handle(new DeleteUserCommand(id));
-
-        return Ok(UserResourceFromEntityAssembler.ToResourceFromEntity(user));
     }
 }

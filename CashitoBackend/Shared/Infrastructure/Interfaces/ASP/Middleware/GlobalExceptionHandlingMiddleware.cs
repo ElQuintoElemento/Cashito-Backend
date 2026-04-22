@@ -20,7 +20,7 @@ public class GlobalExceptionHandlingMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // 👇 IMPORTANTE: excluir swagger
+        // excluye
         if (context.Request.Path.StartsWithSegments("/swagger") ||
             context.Request.Path.StartsWithSegments("/_framework"))
         {
