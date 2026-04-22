@@ -8,7 +8,7 @@ public class Client
 
     public string Dni { get; private set; } = string.Empty;
 
-    public string Name { get; private set; } = string.Empty;
+    public string FirstName { get; private set; } = string.Empty;
 
     public string LastName { get; private set; } = string.Empty;
 
@@ -23,7 +23,7 @@ public class Client
     public Client(
         int userId,
         string dni,
-        string name,
+        string firstName,
         string lastName,
         decimal monthlyIncome,
         string phone)
@@ -32,7 +32,7 @@ public class Client
         if (string.IsNullOrWhiteSpace(dni))
             throw new ArgumentException("DNI es requerido");
 
-        if (string.IsNullOrWhiteSpace(name))
+        if (string.IsNullOrWhiteSpace(firstName))
             throw new ArgumentException("Nombre es requerido");
 
         if (monthlyIncome < 0)
@@ -40,7 +40,7 @@ public class Client
 
         UserId = userId;
         Dni = dni;
-        Name = name;
+        FirstName = firstName;
         LastName = lastName;
         MonthlyIncome = monthlyIncome;
         Phone = phone;
@@ -60,7 +60,7 @@ public class Client
         if (monthlyIncome < 0)
             throw new ArgumentException("Ingresos no pueden ser negativos");
 
-        Name = name;
+        FirstName = name;
         LastName = lastName;
         MonthlyIncome = monthlyIncome;
         Phone = phone;

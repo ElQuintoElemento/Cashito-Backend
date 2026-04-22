@@ -1,5 +1,5 @@
-﻿using CashitoBackend.IAM.Domain.Model.Aggregates;
-using CashitoBackend.IAM.Domain.Model.Entities;
+﻿using CashitoBackend.Clients.Domain.Model.Aggregates;
+using CashitoBackend.IAM.Domain.Model.Aggregates;
 using CashitoBackend.Shared.Domain.Model.ValueObjects;
 using CashitoBackend.Shared.Infrastructure.Persistence.EFC.Configuration.Extensions;
 using EntityFrameworkCore.CreatedUpdatedDate.Extensions;
@@ -9,6 +9,9 @@ namespace CashitoBackend.Shared.Infrastructure.Persistence.EFC.Configuration;
 
 public class AppDbContext(DbContextOptions options) : DbContext(options)
 {
+    // DbSets
+    public DbSet<Client> Clients { get; set; }
+    
     protected override void OnConfiguring(DbContextOptionsBuilder builder)
     {
         builder.AddCreatedUpdatedInterceptor();
@@ -45,5 +48,33 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         // OPTIONAL: soft delete
         // =========================
         // e.HasQueryFilter(u => u.IsActive);
+        
+        builder.Entity<Client>(e =>
+        {
+            e.HasKey(c => c.Id);
+            e.Property(c => c.Id).ValueGeneratedOnAdd();
+
+            e.Property(c => c.UserId)
+                .IsRequired();
+
+            e.Property(c => c.Dni)
+                .IsRequired()
+                .HasMaxLength(20);
+
+            e.Property(c => c.FirstName)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            e.Property(c => c.LastName)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            e.Property(c => c.MonthlyIncome)
+                .HasColumnType("decimal(18,2)");
+
+            e.Property(c => c.Phone)
+                .HasMaxLength(20);
+        });
+        
     }
 }
