@@ -22,6 +22,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Credits\Interfaces\REST\Resources\" />
+      <Folder Include="Credits\Interfaces\REST\Transform\" />
       <Folder Include="IAM\Application\Internal\" />
       <Folder Include="IAM\Infrastructure\" />
     </ItemGroup>
