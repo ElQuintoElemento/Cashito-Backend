@@ -2,6 +2,7 @@
 using CashitoBackend.IAM.Domain.Model.Aggregates;
 using CashitoBackend.Shared.Domain.Model.ValueObjects;
 using CashitoBackend.Shared.Infrastructure.Persistence.EFC.Configuration.Extensions;
+using CashitoBackend.Vehicles.Domain.Model.Aggregates;
 using EntityFrameworkCore.CreatedUpdatedDate.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 {
     // DbSets
     public DbSet<Client> Clients { get; set; }
+    public DbSet<Vehicle> Vehicles { get; set; }
     
     protected override void OnConfiguring(DbContextOptionsBuilder builder)
     {
@@ -43,11 +45,14 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
                 .HasColumnName("email")
                 .HasMaxLength(255);
         });
-
-        // =========================
+        
         // OPTIONAL: soft delete
-        // =========================
         // e.HasQueryFilter(u => u.IsActive);
+        
+        
+        // =========================
+        // CLIENTS
+        // =========================
         
         builder.Entity<Client>(e =>
         {
@@ -76,5 +81,38 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
                 .HasMaxLength(20);
         });
         
+        
+        // =========================
+        // VEHICLES
+        // =========================
+        
+        builder.Entity<Vehicle>(e =>
+        {
+            e.HasKey(v => v.Id);
+            e.Property(v => v.Id).ValueGeneratedOnAdd();
+
+            e.Property(v => v.UserId).IsRequired();
+
+            e.Property(v => v.Brand)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            e.Property(v => v.Model)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            e.Property(v => v.Price)
+                .HasColumnType("decimal(18,2)");
+
+            e.Property(v => v.Currency)
+                .IsRequired()
+                .HasMaxLength(10);
+
+            e.Property(v => v.Year);
+
+            e.Property(v => v.Type)
+                .IsRequired()
+                .HasMaxLength(50);
+        });
     }
 }
