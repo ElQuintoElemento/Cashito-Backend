@@ -3,6 +3,11 @@ using CashitoBackend.Clients.Application.Internal.QueryServices;
 using CashitoBackend.Clients.Domain.Repositories;
 using CashitoBackend.Clients.Domain.Services;
 using CashitoBackend.Clients.Infrastructure.Persistence.EFC.Repositories;
+using CashitoBackend.Credits.Application.Internal.CommandServices;
+using CashitoBackend.Credits.Application.Internal.QueryServices;
+using CashitoBackend.Credits.Domain.Repositories;
+using CashitoBackend.Credits.Domain.Services;
+using CashitoBackend.Credits.Infrastructure.Persistence.EFC.Repositories;
 using CashitoBackend.IAM.Application.Internal.CommandServices;
 using CashitoBackend.IAM.Application.Internal.OutboundServices;
 using CashitoBackend.IAM.Application.Internal.QueryServices;
@@ -138,6 +143,12 @@ builder.Services.AddScoped<IClientQueryService, ClientQueryService>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 builder.Services.AddScoped<IVehicleCommandService, VehicleCommandService>();
 builder.Services.AddScoped<IVehicleQueryService, VehicleQueryService>();
+
+// Credits Bounded Context
+builder.Services.AddScoped<ICreditRepository, CreditRepository>();
+builder.Services.AddScoped<ICreditCommandService, CreditCommandService>();
+builder.Services.AddScoped<ICreditQueryService, CreditQueryService>();
+builder.Services.AddScoped<ICreditSimulationService, CreditSimulationService>();
 
 // Shared Bounded Context
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
