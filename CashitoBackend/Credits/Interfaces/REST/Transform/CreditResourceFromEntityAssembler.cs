@@ -1,0 +1,22 @@
+﻿using CashitoBackend.Credits.Domain.Model.Aggregates;
+using CashitoBackend.Credits.Interfaces.REST.Resources;
+
+namespace CashitoBackend.Credits.Interfaces.REST.Transform;
+
+public static class CreditResourceFromEntityAssembler
+{
+    public static CreditResource ToResourceFromEntity(Credit entity)
+    {
+        return new CreditResource(
+            entity.Id,
+            entity.ClientId,
+            entity.VehicleId,
+            entity.VehiclePrice,
+            entity.DownPayment,
+            entity.FinancedAmount,
+            entity.Tcea,
+            entity.Van,
+            entity.Tir
+        );
+    }
+}
