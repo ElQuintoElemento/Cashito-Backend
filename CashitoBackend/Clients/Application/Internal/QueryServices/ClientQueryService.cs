@@ -3,7 +3,7 @@ using CashitoBackend.Clients.Domain.Model.Queries;
 using CashitoBackend.Clients.Domain.Repositories;
 using CashitoBackend.Clients.Domain.Services;
 
-namespace CashitoBackend.Clients.Application.Application.QueryServices;
+namespace CashitoBackend.Clients.Application.Internal.QueryServices;
 
 public class ClientQueryService : IClientQueryService
 {

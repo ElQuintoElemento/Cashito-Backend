@@ -24,6 +24,8 @@
     <ItemGroup>
       <Folder Include="IAM\Application\Internal\" />
       <Folder Include="IAM\Infrastructure\" />
+      <Folder Include="Vehicles\Application\Internal\CommandServices\" />
+      <Folder Include="Vehicles\Application\Internal\QueryServices\" />
     </ItemGroup>
 
 </Project>

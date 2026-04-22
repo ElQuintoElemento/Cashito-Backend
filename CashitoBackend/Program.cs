@@ -1,5 +1,5 @@
-using CashitoBackend.Clients.Application.Application.CommandServices;
-using CashitoBackend.Clients.Application.Application.QueryServices;
+using CashitoBackend.Clients.Application.Internal.CommandServices;
+using CashitoBackend.Clients.Application.Internal.QueryServices;
 using CashitoBackend.Clients.Domain.Repositories;
 using CashitoBackend.Clients.Domain.Services;
 using CashitoBackend.Clients.Infrastructure.Persistence.EFC.Repositories;
