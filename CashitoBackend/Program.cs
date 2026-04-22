@@ -1,5 +1,5 @@
-using CashitoBackend.Clients.Application.Application.CommandServices;
-using CashitoBackend.Clients.Application.Application.QueryServices;
+using CashitoBackend.Clients.Application.Internal.CommandServices;
+using CashitoBackend.Clients.Application.Internal.QueryServices;
 using CashitoBackend.Clients.Domain.Repositories;
 using CashitoBackend.Clients.Domain.Services;
 using CashitoBackend.Clients.Infrastructure.Persistence.EFC.Repositories;
@@ -22,6 +22,11 @@ using CashitoBackend.Shared.Infrastructure.Interfaces.ASP.Configuration;
 using CashitoBackend.Shared.Infrastructure.Interfaces.ASP.Middleware;
 using CashitoBackend.Shared.Infrastructure.Persistence.EFC.Configuration;
 using CashitoBackend.Shared.Infrastructure.Persistence.EFC.Repositories;
+using CashitoBackend.Vehicles.Application.Internal.CommandServices;
+using CashitoBackend.Vehicles.Application.Internal.QueryServices;
+using CashitoBackend.Vehicles.Domain.Repositories;
+using CashitoBackend.Vehicles.Domain.Services;
+using CashitoBackend.Vehicles.Infrastructure.Persistence.EFC.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -128,6 +133,11 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<IClientCommandService, ClientCommandService>();
 builder.Services.AddScoped<IClientQueryService, ClientQueryService>();
+
+// Vehicles Bounded Context
+builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+builder.Services.AddScoped<IVehicleCommandService, VehicleCommandService>();
+builder.Services.AddScoped<IVehicleQueryService, VehicleQueryService>();
 
 // Shared Bounded Context
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();

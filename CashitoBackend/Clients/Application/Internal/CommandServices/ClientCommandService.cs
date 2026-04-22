@@ -4,7 +4,7 @@ using CashitoBackend.Clients.Domain.Repositories;
 using CashitoBackend.Clients.Domain.Services;
 using CashitoBackend.Shared.Domain.Repositories;
 
-namespace CashitoBackend.Clients.Application.Application.CommandServices;
+namespace CashitoBackend.Clients.Application.Internal.CommandServices;
 
 public class ClientCommandService : IClientCommandService
 {
