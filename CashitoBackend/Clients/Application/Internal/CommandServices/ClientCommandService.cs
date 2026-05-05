@@ -2,6 +2,7 @@
 using CashitoBackend.Clients.Domain.Model.Commands;
 using CashitoBackend.Clients.Domain.Repositories;
 using CashitoBackend.Clients.Domain.Services;
+using CashitoBackend.Shared.Domain.Model.ValueObjects;
 using CashitoBackend.Shared.Domain.Repositories;
 
 namespace CashitoBackend.Clients.Application.Internal.CommandServices;
@@ -27,7 +28,8 @@ public class ClientCommandService : IClientCommandService
             command.FirstName,
             command.LastName,
             command.MonthlyIncome,
-            command.Phone
+            command.Phone,
+            new EmailAddress(command.Email)
         );
 
         await _clientRepository.AddAsync(client);
@@ -50,7 +52,8 @@ public class ClientCommandService : IClientCommandService
             command.FirstName,
             command.LastName,
             command.MonthlyIncome,
-            command.Phone
+            command.Phone,
+            new EmailAddress(command.Email)
         );
 
         _clientRepository.Update(client);
