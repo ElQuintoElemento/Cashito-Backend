@@ -1,13 +1,81 @@
-# Default ignored files
+# =========================
+# Build results
+# =========================
+bin/
+obj/
+out/
+
+# =========================
+# User-specific files
+# =========================
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# =========================
+# Rider / IntelliJ
+# =========================
+.idea/
+*.sln.iml
+
+# =========================
+# VS Code
+# =========================
+.vscode/
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# NuGet
+# =========================
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# =========================
+# Build caches
+# =========================
+*.cache
+*.pdb
+*.mdb
+
+# =========================
+# Generated files
+# =========================
+*.g.cs
+*.generated.cs
+
+# =========================
+# Test results
+# =========================
+TestResults/
+*.trx
+
+# =========================
+# Environment files
+# =========================
+.env
+.env.*
+
+# =========================
+# Rider extra (lo que ya tenías)
+# =========================
 /shelf/
 /workspace.xml
-# Rider ignored files
 /modules.xml
 /projectSettingsUpdater.xml
 /contentModel.xml
-/.idea.CashitoBackend.iml
-# Editor-based HTTP Client requests
 /httpRequests/
-# Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
