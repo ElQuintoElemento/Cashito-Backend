@@ -12,7 +12,8 @@ public static class UpdateClientCommandFromResourceAssembler
             resource.FirstName,
             resource.LastName,
             resource.MonthlyIncome,
-            resource.Phone
+            resource.Phone,
+            resource.Email
         );
     }
 }

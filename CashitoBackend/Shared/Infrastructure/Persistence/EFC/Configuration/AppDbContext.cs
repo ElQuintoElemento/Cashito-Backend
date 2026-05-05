@@ -83,6 +83,15 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
             e.Property(c => c.Phone)
                 .HasMaxLength(20);
+            
+            e.Property(c => c.Email)
+                .HasConversion(
+                    email => email.Value,                 // VO → string
+                    value => new EmailAddress(value)      // string → VO
+                )
+                .HasColumnName("email")
+                .HasMaxLength(255)
+                .IsRequired();
         });
         
         
@@ -115,8 +124,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             e.Property(v => v.Year);
 
             e.Property(v => v.Type)
-                .IsRequired()
-                .HasMaxLength(50);
+                .HasConversion<string>();
         });
         
         // =========================

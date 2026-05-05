@@ -1,6 +1,8 @@
 ﻿using CashitoBackend.Shared.Domain.Repositories;
 using CashitoBackend.Vehicles.Domain.Model.Aggregates;
 using CashitoBackend.Vehicles.Domain.Model.Commands;
+using CashitoBackend.Vehicles.Domain.Model.Exceptions;
+using CashitoBackend.Vehicles.Domain.Model.ValueObjects;
 using CashitoBackend.Vehicles.Domain.Repositories;
 using CashitoBackend.Vehicles.Domain.Services;
 
@@ -21,6 +23,9 @@ public class VehicleCommandService : IVehicleCommandService
     
     public async Task<Vehicle> Handle(CreateVehicleCommand command, int userId)
     {
+        if (!Enum.TryParse<VehicleType>(command.Type, true, out var parsedType))
+            throw new VehicleDomainException("Invalid vehicle type");
+
         var vehicle = new Vehicle(
             userId,
             command.Brand,
@@ -28,7 +33,7 @@ public class VehicleCommandService : IVehicleCommandService
             command.Price,
             command.Currency,
             command.Year,
-            command.Type
+            parsedType
         );
 
         await _vehicleRepository.AddAsync(vehicle);
@@ -47,13 +52,16 @@ public class VehicleCommandService : IVehicleCommandService
         if (vehicle.UserId != userId)
             throw new UnauthorizedAccessException("Not allowed");
 
+        if (!Enum.TryParse<VehicleType>(command.Type, true, out var parsedType))
+            throw new VehicleDomainException("Invalid vehicle type");
+
         vehicle.Update(
             command.Brand,
             command.Model,
             command.Price,
             command.Currency,
             command.Year,
-            command.Type
+            parsedType
         );
 
         _vehicleRepository.Update(vehicle);
