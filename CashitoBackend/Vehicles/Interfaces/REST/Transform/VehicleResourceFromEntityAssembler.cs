@@ -14,7 +14,7 @@ public static class VehicleResourceFromEntityAssembler
             entity.Price,
             entity.Currency,
             entity.Year,
-            entity.Type
+            entity.Type.ToString()
         );
     }
 }

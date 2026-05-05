@@ -1,4 +1,5 @@
 ﻿using CashitoBackend.Vehicles.Domain.Model.Exceptions;
+using CashitoBackend.Vehicles.Domain.Model.ValueObjects;
 
 namespace CashitoBackend.Vehicles.Domain.Model.Aggregates;
 
@@ -16,7 +17,7 @@ public class Vehicle
     public string Currency { get; private set; } = "PEN";
 
     public int Year { get; private set; }
-    public string Type { get; private set; } = string.Empty;
+    public VehicleType Type { get; private set; }
 
     protected Vehicle() { }
 
@@ -27,7 +28,7 @@ public class Vehicle
         decimal price,
         string currency,
         int year,
-        string type)
+        VehicleType type)
     {
         if (string.IsNullOrWhiteSpace(brand))
             throw new VehicleDomainException("Brand is required");
@@ -43,10 +44,8 @@ public class Vehicle
 
         if (year < 1900)
             throw new VehicleDomainException("Invalid year");
-
-        if (string.IsNullOrWhiteSpace(type))
-            throw new VehicleDomainException("Type is required");
-
+        
+        
         UserId = userId;
         Brand = brand;
         Model = model;
@@ -62,7 +61,7 @@ public class Vehicle
         decimal price,
         string currency,
         int year,
-        string type)
+        VehicleType type)
     {
         if (string.IsNullOrWhiteSpace(brand))
             throw new VehicleDomainException("Brand is required");
@@ -78,10 +77,7 @@ public class Vehicle
 
         if (year < 1900)
             throw new VehicleDomainException("Invalid year");
-
-        if (string.IsNullOrWhiteSpace(type))
-            throw new VehicleDomainException("Type is required");
-
+        
         Brand = brand;
         Model = model;
         Price = price;

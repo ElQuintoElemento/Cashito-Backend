@@ -124,8 +124,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             e.Property(v => v.Year);
 
             e.Property(v => v.Type)
-                .IsRequired()
-                .HasMaxLength(50);
+                .HasConversion<string>();
         });
         
         // =========================
