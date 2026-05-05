@@ -1,4 +1,6 @@
-﻿namespace CashitoBackend.Clients.Domain.Model.Aggregates;
+﻿using CashitoBackend.Shared.Domain.Model.ValueObjects;
+
+namespace CashitoBackend.Clients.Domain.Model.Aggregates;
 
 public class Client
 {
@@ -15,6 +17,8 @@ public class Client
     public decimal MonthlyIncome { get; private set; }
 
     public string Phone { get; private set; } = string.Empty;
+    
+    public EmailAddress Email { get; private set; }
 
     // Constructor para EF
     protected Client() { }
@@ -26,7 +30,8 @@ public class Client
         string firstName,
         string lastName,
         decimal monthlyIncome,
-        string phone)
+        string phone,
+        EmailAddress email)
     {
         // VALIDACIONES BÁSICAS
         if (string.IsNullOrWhiteSpace(dni))
@@ -44,6 +49,7 @@ public class Client
         LastName = lastName;
         MonthlyIncome = monthlyIncome;
         Phone = phone;
+        Email = email;
     }
 
     // 🔥 MÉTODO DE ACTUALIZACIÓN (clave en DDD)
@@ -51,7 +57,8 @@ public class Client
         string name,
         string lastName,
         decimal monthlyIncome,
-        string phone
+        string phone,
+        EmailAddress email
         )
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -64,5 +71,6 @@ public class Client
         LastName = lastName;
         MonthlyIncome = monthlyIncome;
         Phone = phone;
+        Email = email;
     }
 }

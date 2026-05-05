@@ -114,12 +114,6 @@ C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoB
 C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\staticwebassets.build.json
 C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\staticwebassets.development.json
 C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\staticwebassets.build.endpoints.json
-C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\staticwebassets\msbuild.CashitoBackend.Microsoft.AspNetCore.StaticWebAssets.props
-C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\staticwebassets\msbuild.CashitoBackend.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
-C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\staticwebassets\msbuild.build.CashitoBackend.props
-C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\staticwebassets\msbuild.buildMultiTargeting.CashitoBackend.props
-C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\staticwebassets\msbuild.buildTransitive.CashitoBackend.props
-C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\staticwebassets.pack.json
 C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\CashitoB.05A6B6B1.Up2Date
 C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\CashitoBackend.dll
 C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\refint\CashitoBackend.dll
@@ -127,3 +121,9 @@ C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoB
 C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\CashitoBackend.genruntimeconfig.cache
 C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\ref\CashitoBackend.dll
 C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\CashitoBackend.sourcelink.json
+C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\rpswa.dswa.cache.json
+C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\rjimswa.dswa.cache.json
+C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\rjsmrazor.dswa.cache.json
+C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\rjsmcshtml.dswa.cache.json
+C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\staticwebassets.build.json.cache
+C:\Users\andre\OneDrive\Documentos\UNIVERSIDAD\ciclo_7\FINA\TF_Proyecto\CashitoBackend\CashitoBackend\obj\Debug\net9.0\swae.build.ex.cache

@@ -4,5 +4,6 @@ public record UpdateClientResource(
     string FirstName,
     string LastName,
     decimal MonthlyIncome,
-    string Phone
+    string Phone,
+    string Email
 );
