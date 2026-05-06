@@ -14,9 +14,16 @@ public static class CreditResourceFromEntityAssembler
             entity.VehiclePrice,
             entity.DownPayment,
             entity.FinancedAmount,
+            entity.InterestRate,
+            entity.TermMonths,
+            entity.RateType,
+            entity.GracePeriod,
+            entity.Insurance,
             entity.Tcea,
             entity.Van,
-            entity.Tir
+            entity.Tir,
+            entity.Status.ToString(),
+            entity.PublicToken
         );
     }
 }

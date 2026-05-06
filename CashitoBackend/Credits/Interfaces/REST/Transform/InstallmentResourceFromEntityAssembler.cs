@@ -13,7 +13,10 @@ public static class InstallmentResourceFromEntityAssembler
             i.TotalPayment,
             i.Interest,
             i.Amortization,
-            i.RemainingBalance
+            i.RemainingBalance,
+            i.IsPaid,
+            i.PaidAt,
+            i.GetStatus().ToString()
         );
     }
 }

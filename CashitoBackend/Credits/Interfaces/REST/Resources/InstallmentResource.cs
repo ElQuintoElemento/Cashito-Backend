@@ -6,5 +6,8 @@ public record InstallmentResource(
     decimal TotalPayment,
     decimal Interest,
     decimal Amortization,
-    decimal RemainingBalance
+    decimal RemainingBalance,
+    bool IsPaid,
+    DateTime? PaidAt,
+    string Status
 );

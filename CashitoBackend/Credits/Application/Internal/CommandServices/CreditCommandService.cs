@@ -22,12 +22,14 @@ public class CreditCommandService : ICreditCommandService
         _unitOfWork = unitOfWork;
         _simulationService = simulationService;
     }
-    
+
+    // 🔹 SIMULACIÓN
     public async Task<SimulationResult> Handle(SimulateCreditCommand command, int userId)
     {
         return _simulationService.Simulate(command);
     }
-    
+
+    // 🔹 CREAR CRÉDITO
     public async Task<Credit> Handle(CreateCreditCommand command, int userId)
     {
         var simulateCommand = new SimulateCreditCommand(
@@ -65,16 +67,94 @@ public class CreditCommandService : ICreditCommandService
 
         return credit;
     }
-    
+
+    // 🔹 APPROVE
+    public async Task<bool> Approve(int creditId, int userId)
+    {
+        var credit = await _creditRepository.FindByIdAsync(creditId);
+
+        if (credit == null || credit.UserId != userId)
+            return false;
+
+        credit.Approve();
+
+        _creditRepository.Update(credit);
+        await _unitOfWork.CompleteAsync();
+
+        return true;
+    }
+
+    // 🔹 ACTIVATE
+    public async Task<bool> Activate(int creditId, int userId)
+    {
+        var credit = await _creditRepository.FindByIdAsync(creditId);
+
+        if (credit == null || credit.UserId != userId)
+            return false;
+
+        credit.Activate();
+
+        _creditRepository.Update(credit);
+        await _unitOfWork.CompleteAsync();
+
+        return true;
+    }
+
+    // 🔹 REJECT
+    public async Task<bool> Reject(int creditId, int userId)
+    {
+        var credit = await _creditRepository.FindByIdAsync(creditId);
+
+        if (credit == null || credit.UserId != userId)
+            return false;
+
+        credit.Reject();
+
+        _creditRepository.Update(credit);
+        await _unitOfWork.CompleteAsync();
+
+        return true;
+    }
+
+    // 🔹 COMPLETE
+    public async Task<bool> Complete(int creditId, int userId)
+    {
+        var credit = await _creditRepository.FindByIdAsync(creditId);
+
+        if (credit == null || credit.UserId != userId)
+            return false;
+
+        credit.Complete();
+
+        _creditRepository.Update(credit);
+        await _unitOfWork.CompleteAsync();
+
+        return true;
+    }
+
+    // 🔹 PAGAR CUOTA
+    public async Task<bool> PayInstallment(int creditId, int installmentNumber, int userId)
+    {
+        var credit = await _creditRepository.FindByIdWithScheduleAsync(creditId);
+
+        if (credit == null || credit.UserId != userId)
+            return false;
+
+        credit.PayInstallment(installmentNumber);
+
+        _creditRepository.Update(credit);
+        await _unitOfWork.CompleteAsync();
+
+        return true;
+    }
+
+    // 🔹 DELETE
     public async Task<bool> Delete(int creditId, int userId)
     {
         var credit = await _creditRepository.FindByIdAsync(creditId);
 
-        if (credit == null)
+        if (credit == null || credit.UserId != userId)
             return false;
-
-        if (credit.UserId != userId)
-            throw new UnauthorizedAccessException("Not allowed");
 
         _creditRepository.Remove(credit);
         await _unitOfWork.CompleteAsync();

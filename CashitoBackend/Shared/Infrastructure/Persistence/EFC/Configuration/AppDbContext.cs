@@ -128,9 +128,8 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         });
         
         // =========================
-        // CREDITS
-        // =========================
-        
+// CREDITS
+// =========================
         builder.Entity<Credit>(e =>
         {
             e.HasKey(c => c.Id);
@@ -156,13 +155,30 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             e.Property(c => c.Van).HasColumnType("decimal(18,2)");
             e.Property(c => c.Tir).HasColumnType("decimal(10,6)");
 
-            // 🔥 RELACIÓN CON INSTALLMENTS
+            // 🔥 ENUM
+            e.Property(c => c.Status)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
+            // 🔥 TOKEN
+            e.Property(c => c.PublicToken)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            // 🔥 INDEXES
+            e.HasIndex(c => c.UserId);
+            e.HasIndex(c => c.Status);
+
+            // 🔥 RELACIÓN
             e.HasMany(c => c.Schedule)
                 .WithOne()
-                .HasForeignKey("CreditId")
+                .HasForeignKey(i => i.CreditId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
         
+        // =========================
+        // INSTALLMENTS
+        // =========================
         builder.Entity<Installment>(e =>
         {
             e.HasKey(i => i.Id);
@@ -175,6 +191,11 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             e.Property(i => i.Interest).HasColumnType("decimal(18,2)");
             e.Property(i => i.Amortization).HasColumnType("decimal(18,2)");
             e.Property(i => i.RemainingBalance).HasColumnType("decimal(18,2)");
+
+            // 🔥 NUEVO
+            e.Property(i => i.CreditId).IsRequired();
+            e.Property(i => i.IsPaid).IsRequired();
+            e.Property(i => i.PaidAt);
         });
     }
 }

@@ -1,7 +1,8 @@
-﻿namespace CashitoBackend.Credits.Domain.Model.Aggregates;
-
-using CashitoBackend.Credits.Domain.Model.Entities;
+﻿using CashitoBackend.Credits.Domain.Model.Entities;
 using CashitoBackend.Credits.Domain.Model.Exceptions;
+using CashitoBackend.Credits.Domain.Model.ValueObjects;
+
+namespace CashitoBackend.Credits.Domain.Model.Aggregates;
 
 public class Credit
 {
@@ -23,12 +24,14 @@ public class Credit
 
     public decimal Insurance { get; private set; }
 
-    // indicadores
     public decimal Tcea { get; private set; }
     public decimal Van { get; private set; }
     public decimal Tir { get; private set; }
 
-    // cronograma
+    public CreditStatus Status { get; private set; }
+
+    public string PublicToken { get; private set; }
+
     public List<Installment> Schedule { get; private set; } = new();
 
     protected Credit() { }
@@ -48,7 +51,7 @@ public class Credit
         if (vehiclePrice <= 0)
             throw new CreditDomainException("Vehicle price must be greater than 0");
 
-        if (downPayment < 0)
+        if (downPayment < 0 || downPayment >= vehiclePrice)
             throw new CreditDomainException("Invalid down payment");
 
         if (interestRate <= 0)
@@ -70,8 +73,14 @@ public class Credit
         RateType = rateType;
         GracePeriod = gracePeriod;
         Insurance = insurance;
+
+        Status = CreditStatus.Simulated;
+        PublicToken = Guid.NewGuid().ToString();
     }
 
+    // =========================
+    // FINANCIAL RESULTS
+    // =========================
     public void SetResults(decimal tcea, decimal van, decimal tir)
     {
         Tcea = tcea;
@@ -79,8 +88,59 @@ public class Credit
         Tir = tir;
     }
 
+    // =========================
+    // SCHEDULE
+    // =========================
     public void SetSchedule(List<Installment> schedule)
     {
         Schedule = schedule;
+    }
+
+    // =========================
+    // STATE MACHINE
+    // =========================
+    public void Approve()
+    {
+        if (Status != CreditStatus.Simulated)
+            throw new CreditDomainException("Invalid state transition");
+
+        Status = CreditStatus.Approved;
+    }
+
+    public void Activate()
+    {
+        if (Status != CreditStatus.Approved)
+            throw new CreditDomainException("Invalid state transition");
+
+        Status = CreditStatus.Active;
+    }
+
+    public void Complete()
+    {
+        if (Status != CreditStatus.Active)
+            throw new CreditDomainException("Invalid state transition");
+
+        Status = CreditStatus.Completed;
+    }
+
+    public void Reject()
+    {
+        if (Status != CreditStatus.Simulated)
+            throw new CreditDomainException("Invalid state transition");
+
+        Status = CreditStatus.Rejected;
+    }
+
+    // =========================
+    // PAYMENTS
+    // =========================
+    public void PayInstallment(int number)
+    {
+        var installment = Schedule.FirstOrDefault(i => i.Number == number);
+
+        if (installment == null)
+            throw new CreditDomainException("Installment not found");
+
+        installment.MarkAsPaid();
     }
 }
