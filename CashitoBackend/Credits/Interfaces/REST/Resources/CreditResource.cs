@@ -6,6 +6,7 @@ public record CreditResource(
     int VehicleId,
 
     decimal VehiclePrice,
+    string Currency,
     decimal DownPayment,
     decimal FinancedAmount,
 

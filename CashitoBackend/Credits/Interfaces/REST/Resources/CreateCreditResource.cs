@@ -4,6 +4,7 @@ public record CreateCreditResource(
     int ClientId,
     int VehicleId,
     decimal VehiclePrice,
+    string Currency,
     decimal DownPayment,
     decimal InterestRate,
     int TermMonths,

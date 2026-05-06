@@ -1,11 +1,14 @@
-﻿namespace CashitoBackend.Vehicles.Domain.Model.Commands;
+﻿using CashitoBackend.Shared.Domain.Model.ValueObjects;
+using CashitoBackend.Vehicles.Domain.Model.ValueObjects;
+
+namespace CashitoBackend.Vehicles.Domain.Model.Commands;
 
 public record UpdateVehicleCommand(
     int Id,
     string Brand,
     string Model,
     decimal Price,
-    string Currency,
+    Currency Currency,
     int Year,
-    string Type
+    VehicleType Type
 );
