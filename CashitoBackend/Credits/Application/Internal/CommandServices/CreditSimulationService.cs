@@ -11,12 +11,27 @@ public class CreditSimulationService : ICreditSimulationService
     {
         var financedAmount = command.VehiclePrice - command.DownPayment;
 
-        var monthlyRate = command.InterestRate / 100m / 12m;
+        // 🔥 1. TIPO DE TASA (TEA / TNA)
+        decimal monthlyRate;
+
+        if (command.RateType == "TEA")
+        {
+            monthlyRate = (decimal)Math.Pow(
+                1 + (double)(command.InterestRate / 100m),
+                1.0 / 12.0
+            ) - 1;
+        }
+        else // TNA
+        {
+            monthlyRate = command.InterestRate / 100m / 12m;
+        }
+
         var n = command.TermMonths;
 
-        var cuota = financedAmount *
-                    (monthlyRate * (decimal)Math.Pow((double)(1 + monthlyRate), n)) /
-                    ((decimal)Math.Pow((double)(1 + monthlyRate), n) - 1);
+        // 🔥 2. CUOTA BASE (sin seguro)
+        var cuotaBase = financedAmount *
+                        (monthlyRate * (decimal)Math.Pow((double)(1 + monthlyRate), n)) /
+                        ((decimal)Math.Pow((double)(1 + monthlyRate), n) - 1);
 
         var schedule = new List<Installment>();
 
@@ -25,38 +40,63 @@ public class CreditSimulationService : ICreditSimulationService
 
         for (int i = 1; i <= n; i++)
         {
-            var interest = balance * monthlyRate;
-            var amortization = cuota - interest;
-            balance -= amortization;
+            decimal interest = balance * monthlyRate;
+            decimal amortization = 0;
+            decimal totalPayment = 0;
+
+            // 🔥 3. PERIODO DE GRACIA (TOTAL)
+            if (i <= command.GracePeriod)
+            {
+                amortization = 0;
+                totalPayment = 0;
+
+                // interés se capitaliza
+                balance += interest;
+            }
+            else
+            {
+                amortization = cuotaBase - interest;
+                totalPayment = cuotaBase;
+
+                balance -= amortization;
+            }
+
+            // 🔥 4. SEGURO
+            totalPayment += command.Insurance;
 
             schedule.Add(new Installment(
                 i,
                 date.AddMonths(i),
-                cuota,
+                totalPayment,
                 interest,
                 amortization,
                 balance < 0 ? 0 : balance
             ));
         }
 
+        // 🔥 5. FLUJOS DE CAJA (DEUDOR)
         var cashFlows = new List<decimal> { -financedAmount };
         cashFlows.AddRange(schedule.Select(s => s.TotalPayment));
 
         var tir = CalculateIRR(cashFlows);
         var van = CalculateNPV(monthlyRate, cashFlows);
 
-        var tcea = (decimal)(Math.Pow((double)(1 + tir), 12) - 1) * 100;
+        // 🔥 6. TCEA
+        var tcea = (decimal)(Math.Pow(1 + (double)tir, 12) - 1) * 100;
 
         return new SimulationResult
         {
-            Cuota = cuota,
+            Cuota = cuotaBase + command.Insurance,
             Installments = schedule,
             Tir = tir,
             Van = van,
             Tcea = tcea
         };
     }
-    
+
+    // =========================
+    // IRR (TIR)
+    // =========================
     private static decimal CalculateIRR(List<decimal> cashFlows)
     {
         double guess = 0.1;
@@ -83,6 +123,9 @@ public class CreditSimulationService : ICreditSimulationService
         return (decimal)guess;
     }
 
+    // =========================
+    // NPV (VAN)
+    // =========================
     private static decimal CalculateNPV(decimal rate, List<decimal> cashFlows)
     {
         decimal npv = 0;

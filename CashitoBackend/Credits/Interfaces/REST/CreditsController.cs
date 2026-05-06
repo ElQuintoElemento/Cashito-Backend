@@ -23,7 +23,10 @@ public class CreditsController : ControllerBase
         _commandService = commandService;
         _queryService = queryService;
     }
-    
+
+    // =========================
+    // 🔥 SIMULACIÓN
+    // =========================
     [HttpPost("simulate")]
     public async Task<IActionResult> Simulate([FromBody] SimulateCreditResource resource)
     {
@@ -44,7 +47,10 @@ public class CreditsController : ControllerBase
 
         return Ok(response);
     }
-    
+
+    // =========================
+    // 💾 CREAR CRÉDITO
+    // =========================
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateCreditResource resource)
     {
@@ -55,54 +61,115 @@ public class CreditsController : ControllerBase
 
         var result = await _commandService.Handle(command, userId);
 
-        var response = CreditResourceFromEntityAssembler
-            .ToResourceFromEntity(result);
-
-        return Ok(response);
+        return Ok(CreditResourceFromEntityAssembler.ToResourceFromEntity(result));
     }
-    
+
+    // =========================
+    // 📄 LISTAR
+    // =========================
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
         var userId = User.GetUserId();
 
-        var query = new GetAllCreditsQuery(userId);
+        var result = await _queryService.Handle(new GetAllCreditsQuery(userId));
 
-        var result = await _queryService.Handle(query);
-
-        var response = result
-            .Select(CreditResourceFromEntityAssembler.ToResourceFromEntity);
-
-        return Ok(response);
+        return Ok(result.Select(CreditResourceFromEntityAssembler.ToResourceFromEntity));
     }
-    
+
+    // =========================
+    // 📄 DETALLE
+    // =========================
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {
         var userId = User.GetUserId();
 
-        var query = new GetCreditByIdQuery(id, userId);
-
-        var result = await _queryService.Handle(query);
+        var result = await _queryService.Handle(new GetCreditByIdQuery(id, userId));
 
         if (result == null)
             return NotFound();
 
         return Ok(CreditResourceFromEntityAssembler.ToResourceFromEntity(result));
     }
-    
+
+    // =========================
+    // 📊 CRONOGRAMA
+    // =========================
     [HttpGet("{id:int}/schedule")]
     public async Task<IActionResult> GetSchedule(int id)
     {
         var userId = User.GetUserId();
 
-        var query = new GetCreditScheduleQuery(id, userId);
+        var result = await _queryService.Handle(new GetCreditScheduleQuery(id, userId));
 
-        var result = await _queryService.Handle(query);
+        return Ok(result.Select(InstallmentResourceFromEntityAssembler.ToResourceFromEntity));
+    }
 
-        var response = result
-            .Select(InstallmentResourceFromEntityAssembler.ToResourceFromEntity);
+    // =========================
+    // 🔁 ESTADOS (CORE)
+    // =========================
 
-        return Ok(response);
+    [HttpPut("{id:int}/approve")]
+    public async Task<IActionResult> Approve(int id)
+    {
+        var userId = User.GetUserId();
+
+        var result = await _commandService.Approve(id, userId);
+
+        if (!result) return NotFound();
+
+        return NoContent();
+    }
+
+    [HttpPut("{id:int}/activate")]
+    public async Task<IActionResult> Activate(int id)
+    {
+        var userId = User.GetUserId();
+
+        var result = await _commandService.Activate(id, userId);
+
+        if (!result) return NotFound();
+
+        return NoContent();
+    }
+
+    [HttpPut("{id:int}/reject")]
+    public async Task<IActionResult> Reject(int id)
+    {
+        var userId = User.GetUserId();
+
+        var result = await _commandService.Reject(id, userId);
+
+        if (!result) return NotFound();
+
+        return NoContent();
+    }
+
+    [HttpPut("{id:int}/complete")]
+    public async Task<IActionResult> Complete(int id)
+    {
+        var userId = User.GetUserId();
+
+        var result = await _commandService.Complete(id, userId);
+
+        if (!result) return NotFound();
+
+        return NoContent();
+    }
+
+    // =========================
+    // 💸 PAGAR CUOTA (ASESOR)
+    // =========================
+    [HttpPut("{id:int}/installments/{number}/pay")]
+    public async Task<IActionResult> PayInstallment(int id, int number)
+    {
+        var userId = User.GetUserId();
+
+        var result = await _commandService.PayInstallment(id, number, userId);
+
+        if (!result) return NotFound();
+
+        return NoContent();
     }
 }
