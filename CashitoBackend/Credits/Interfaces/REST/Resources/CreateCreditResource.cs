@@ -10,5 +10,6 @@ public record CreateCreditResource(
     int TermMonths,
     string RateType,
     int GracePeriod,
+    string GraceType,
     decimal Insurance
 );

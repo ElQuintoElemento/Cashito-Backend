@@ -10,5 +10,6 @@ public record SimulateCreditResource(
     int TermMonths,
     string RateType,
     int GracePeriod,
+    string GraceType,
     decimal Insurance
 );

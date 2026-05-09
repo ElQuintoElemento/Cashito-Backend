@@ -1,6 +1,7 @@
 ﻿using CashitoBackend.Credits.Application.Internal.DTOs;
 using CashitoBackend.Credits.Domain.Model.Commands;
 using CashitoBackend.Credits.Domain.Model.Entities;
+using CashitoBackend.Credits.Domain.Model.ValueObjects;
 using CashitoBackend.Credits.Domain.Services;
 
 namespace CashitoBackend.Credits.Application.Internal.CommandServices;
@@ -11,7 +12,10 @@ public class CreditSimulationService : ICreditSimulationService
     {
         var financedAmount = command.VehiclePrice - command.DownPayment;
 
-        // 1. TIPO DE TASA (TEA / TNA)
+        // =========================
+        // TASA MENSUAL
+        // =========================
+
         decimal monthlyRate;
 
         if (command.RateType == "TEA")
@@ -26,77 +30,126 @@ public class CreditSimulationService : ICreditSimulationService
             monthlyRate = command.InterestRate / 100m / 12m;
         }
 
-        var n = command.TermMonths;
+        int totalPeriods = command.TermMonths;
 
-        // 🔥 2. CUOTA BASE (sin seguro)
-        var cuotaBase = financedAmount *
-                        (monthlyRate * (decimal)Math.Pow((double)(1 + monthlyRate), n)) /
-                        ((decimal)Math.Pow((double)(1 + monthlyRate), n) - 1);
+        decimal balance = financedAmount;
+
+        // =========================
+        // APLICAR GRACIA
+        // =========================
+
+        for (int i = 1; i <= command.GracePeriod; i++)
+        {
+            var interest = balance * monthlyRate;
+
+            if (command.GraceType == GraceType.Total)
+            {
+                // Capitaliza interés
+                balance += interest;
+            }
+        }
+
+        // =========================
+        // CUOTA FRANCESA
+        // =========================
+
+        int paymentPeriods = totalPeriods - command.GracePeriod;
+
+        decimal cuotaBase = 0;
+
+        if (paymentPeriods > 0)
+        {
+            cuotaBase = balance *
+                        (monthlyRate * (decimal)Math.Pow((double)(1 + monthlyRate), paymentPeriods)) /
+                        ((decimal)Math.Pow((double)(1 + monthlyRate), paymentPeriods) - 1);
+        }
 
         var schedule = new List<Installment>();
 
-        decimal balance = financedAmount;
+        balance = financedAmount;
+
         DateTime date = DateTime.UtcNow;
 
-        for (int i = 1; i <= n; i++)
+        // =========================
+        // CRONOGRAMA
+        // =========================
+
+        for (int i = 1; i <= totalPeriods; i++)
         {
             decimal interest = balance * monthlyRate;
             decimal amortization = 0;
             decimal totalPayment = 0;
 
-            // 🔥 3. PERIODO DE GRACIA (TOTAL)
+            // PERIODO DE GRACIA
             if (i <= command.GracePeriod)
             {
-                amortization = 0;
-                totalPayment = 0;
+                if (command.GraceType == GraceType.Total)
+                {
+                    totalPayment = 0;
 
-                // interés se capitaliza
-                balance += interest;
+                    // capitalización
+                    balance += interest;
+                }
+                else if (command.GraceType == GraceType.Partial)
+                {
+                    totalPayment = interest;
+
+                    // no amortiza
+                }
             }
             else
             {
                 amortization = cuotaBase - interest;
+
                 totalPayment = cuotaBase;
 
                 balance -= amortization;
             }
 
-            // 🔥 4. SEGURO
+            // 🔥 SEGURO
             totalPayment += command.Insurance;
 
             schedule.Add(new Installment(
                 i,
                 date.AddMonths(i),
-                totalPayment,
-                interest,
-                amortization,
-                balance < 0 ? 0 : balance
+                decimal.Round(totalPayment, 2),
+                decimal.Round(interest, 2),
+                decimal.Round(amortization, 2),
+                decimal.Round(balance < 0 ? 0 : balance, 2)
             ));
         }
 
-        // 🔥 5. FLUJOS DE CAJA (DEUDOR)
-        var cashFlows = new List<decimal> { -financedAmount };
+        // =========================
+        // FLUJOS DE CAJA
+        // =========================
+
+        var cashFlows = new List<decimal>
+        {
+            -financedAmount
+        };
+
         cashFlows.AddRange(schedule.Select(s => s.TotalPayment));
 
         var tir = CalculateIRR(cashFlows);
+
         var van = CalculateNPV(monthlyRate, cashFlows);
 
-        // 🔥 6. TCEA
         var tcea = (decimal)(Math.Pow(1 + (double)tir, 12) - 1) * 100;
 
         return new SimulationResult
         {
-            Cuota = cuotaBase + command.Insurance,
+            Cuota = decimal.Round(cuotaBase + command.Insurance, 2),
             Installments = schedule,
-            Tir = tir,
-            Van = van,
-            Tcea = tcea
+            Tir = decimal.Round(tir * 100, 6),
+            Van = decimal.Round(van, 2),
+            Tcea = decimal.Round(tcea, 4)
         };
     }
 
     // =========================
-    // IRR (TIR)
+    // TIR
     // =========================
+
     private static decimal CalculateIRR(List<decimal> cashFlows)
     {
         double guess = 0.1;
@@ -109,7 +162,10 @@ public class CreditSimulationService : ICreditSimulationService
             for (int t = 0; t < cashFlows.Count; t++)
             {
                 npv += (double)cashFlows[t] / Math.Pow(1 + guess, t);
-                derivative -= t * (double)cashFlows[t] / Math.Pow(1 + guess, t + 1);
+
+                derivative -= t *
+                              (double)cashFlows[t] /
+                              Math.Pow(1 + guess, t + 1);
             }
 
             var newGuess = guess - npv / derivative;
@@ -124,15 +180,17 @@ public class CreditSimulationService : ICreditSimulationService
     }
 
     // =========================
-    // NPV (VAN)
+    // VAN
     // =========================
+
     private static decimal CalculateNPV(decimal rate, List<decimal> cashFlows)
     {
         decimal npv = 0;
 
         for (int t = 0; t < cashFlows.Count; t++)
         {
-            npv += cashFlows[t] / (decimal)Math.Pow((double)(1 + rate), t);
+            npv += cashFlows[t] /
+                   (decimal)Math.Pow((double)(1 + rate), t);
         }
 
         return npv;

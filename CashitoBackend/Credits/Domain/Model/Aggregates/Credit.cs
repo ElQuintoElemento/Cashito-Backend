@@ -23,7 +23,8 @@ public class Credit
 
     public string RateType { get; private set; } = "TEA";
     public int GracePeriod { get; private set; }
-
+    public GraceType GraceType { get; private set; }
+    
     public decimal Insurance { get; private set; }
 
     public decimal Tcea { get; private set; }
@@ -49,6 +50,7 @@ public class Credit
         int termMonths,
         string rateType,
         int gracePeriod,
+        GraceType graceType,
         decimal insurance)
     {
         if (vehiclePrice <= 0)
@@ -76,6 +78,7 @@ public class Credit
         TermMonths = termMonths;
         RateType = rateType;
         GracePeriod = gracePeriod;
+        GraceType = graceType;
         Insurance = insurance;
 
         Status = CreditStatus.Simulated;

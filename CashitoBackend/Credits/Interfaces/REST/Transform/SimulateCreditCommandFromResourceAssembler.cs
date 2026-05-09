@@ -1,4 +1,5 @@
 ﻿using CashitoBackend.Credits.Domain.Model.Commands;
+using CashitoBackend.Credits.Domain.Model.ValueObjects;
 using CashitoBackend.Credits.Interfaces.REST.Resources;
 using CashitoBackend.Shared.Domain.Model.ValueObjects;
 
@@ -10,7 +11,10 @@ public static class SimulateCreditCommandFromResourceAssembler
     {
         if (!Enum.TryParse<Currency>(resource.Currency, true, out var currency))
             throw new Exception("Invalid currency");
-        
+
+        if (!Enum.TryParse<GraceType>(resource.GraceType, true, out var graceType))
+            throw new Exception("Invalid grace type");
+
         return new SimulateCreditCommand(
             resource.ClientId,
             resource.VehicleId,
@@ -21,6 +25,7 @@ public static class SimulateCreditCommandFromResourceAssembler
             resource.TermMonths,
             resource.RateType,
             resource.GracePeriod,
+            graceType,
             resource.Insurance
         );
     }

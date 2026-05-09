@@ -146,7 +146,9 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             e.Property(c => c.VehiclePrice).HasColumnType("decimal(18,2)");
             e.Property(v => v.Currency)
                 .IsRequired()
-                .HasConversion<string>();
+                .HasConversion<string>()
+                .HasMaxLength(10);;
+            
             e.Property(c => c.DownPayment).HasColumnType("decimal(18,2)");
             e.Property(c => c.FinancedAmount).HasColumnType("decimal(18,2)");
 
@@ -155,6 +157,9 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
             e.Property(c => c.RateType).HasMaxLength(10);
             e.Property(c => c.GracePeriod);
+            e.Property(c => c.GraceType)
+                .HasConversion<string>()
+                .HasMaxLength(20);
 
             e.Property(c => c.Insurance).HasColumnType("decimal(10,2)");
 
