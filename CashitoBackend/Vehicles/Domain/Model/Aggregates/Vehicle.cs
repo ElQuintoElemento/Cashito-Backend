@@ -1,4 +1,5 @@
-﻿using CashitoBackend.Vehicles.Domain.Model.Exceptions;
+﻿using CashitoBackend.Shared.Domain.Model.ValueObjects;
+using CashitoBackend.Vehicles.Domain.Model.Exceptions;
 using CashitoBackend.Vehicles.Domain.Model.ValueObjects;
 
 namespace CashitoBackend.Vehicles.Domain.Model.Aggregates;
@@ -14,7 +15,7 @@ public class Vehicle
 
     public decimal Price { get; private set; }
     
-    public string Currency { get; private set; } = "PEN";
+    public Currency Currency { get; private set; } = Currency.PEN;
 
     public int Year { get; private set; }
     public VehicleType Type { get; private set; }
@@ -26,7 +27,7 @@ public class Vehicle
         string brand,
         string model,
         decimal price,
-        string currency,
+        Currency currency,
         int year,
         VehicleType type)
     {
@@ -38,9 +39,6 @@ public class Vehicle
 
         if (price <= 0)
             throw new VehicleDomainException("Price must be greater than 0");
-
-        if (string.IsNullOrWhiteSpace(currency))
-            throw new VehicleDomainException("Currency is required");
 
         if (year < 1900)
             throw new VehicleDomainException("Invalid year");
@@ -50,7 +48,7 @@ public class Vehicle
         Brand = brand;
         Model = model;
         Price = price;
-        Currency = currency.ToUpper();
+        Currency = currency;
         Year = year;
         Type = type;
     }
@@ -59,7 +57,7 @@ public class Vehicle
         string brand,
         string model,
         decimal price,
-        string currency,
+        Currency currency,
         int year,
         VehicleType type)
     {
@@ -72,16 +70,13 @@ public class Vehicle
         if (price <= 0)
             throw new VehicleDomainException("Price must be greater than 0");
 
-        if (string.IsNullOrWhiteSpace(currency))
-            throw new VehicleDomainException("Currency is required");
-
         if (year < 1900)
             throw new VehicleDomainException("Invalid year");
         
         Brand = brand;
         Model = model;
         Price = price;
-        Currency = currency.ToUpper();
+        Currency = currency;
         Year = year;
         Type = type;
     }

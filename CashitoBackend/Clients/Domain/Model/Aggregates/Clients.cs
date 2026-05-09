@@ -15,6 +15,8 @@ public class Client
     public string LastName { get; private set; } = string.Empty;
 
     public decimal MonthlyIncome { get; private set; }
+    
+    public Currency IncomeCurrency { get; private set; } = Currency.PEN;
 
     public string Phone { get; private set; } = string.Empty;
     
@@ -30,6 +32,7 @@ public class Client
         string firstName,
         string lastName,
         decimal monthlyIncome,
+        Currency incomeCurrency,
         string phone,
         EmailAddress email)
     {
@@ -42,24 +45,27 @@ public class Client
 
         if (monthlyIncome < 0)
             throw new ArgumentException("Ingresos no pueden ser negativos");
+        
+        if (!Enum.IsDefined(typeof(Currency), incomeCurrency))
+            throw new ArgumentException("Invalid income currency");
 
         UserId = userId;
         Dni = dni;
         FirstName = firstName;
         LastName = lastName;
         MonthlyIncome = monthlyIncome;
+        IncomeCurrency = incomeCurrency;
         Phone = phone;
         Email = email;
     }
 
-    // 🔥 MÉTODO DE ACTUALIZACIÓN (clave en DDD)
     public void Update(
         string name,
         string lastName,
         decimal monthlyIncome,
+        Currency incomeCurrency,
         string phone,
-        EmailAddress email
-        )
+        EmailAddress email)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Nombre es requerido");
@@ -70,6 +76,7 @@ public class Client
         FirstName = name;
         LastName = lastName;
         MonthlyIncome = monthlyIncome;
+        IncomeCurrency = incomeCurrency;
         Phone = phone;
         Email = email;
     }

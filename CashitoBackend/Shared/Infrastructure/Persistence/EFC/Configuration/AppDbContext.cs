@@ -80,6 +80,10 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
             e.Property(c => c.MonthlyIncome)
                 .HasColumnType("decimal(18,2)");
+            
+            e.Property(v => v.IncomeCurrency)
+                .IsRequired()
+                .HasConversion<string>();
 
             e.Property(c => c.Phone)
                 .HasMaxLength(20);
@@ -119,7 +123,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
             e.Property(v => v.Currency)
                 .IsRequired()
-                .HasMaxLength(10);
+                .HasConversion<string>();
 
             e.Property(v => v.Year);
 
@@ -128,8 +132,8 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         });
         
         // =========================
-// CREDITS
-// =========================
+        // CREDITS
+        // =========================
         builder.Entity<Credit>(e =>
         {
             e.HasKey(c => c.Id);
@@ -140,6 +144,9 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             e.Property(c => c.VehicleId).IsRequired();
 
             e.Property(c => c.VehiclePrice).HasColumnType("decimal(18,2)");
+            e.Property(v => v.Currency)
+                .IsRequired()
+                .HasConversion<string>();
             e.Property(c => c.DownPayment).HasColumnType("decimal(18,2)");
             e.Property(c => c.FinancedAmount).HasColumnType("decimal(18,2)");
 
@@ -191,8 +198,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             e.Property(i => i.Interest).HasColumnType("decimal(18,2)");
             e.Property(i => i.Amortization).HasColumnType("decimal(18,2)");
             e.Property(i => i.RemainingBalance).HasColumnType("decimal(18,2)");
-
-            // 🔥 NUEVO
+            
             e.Property(i => i.CreditId).IsRequired();
             e.Property(i => i.IsPaid).IsRequired();
             e.Property(i => i.PaidAt);

@@ -28,6 +28,7 @@ public class ClientCommandService : IClientCommandService
             command.FirstName,
             command.LastName,
             command.MonthlyIncome,
+            command.IncomeCurrency,
             command.Phone,
             new EmailAddress(command.Email)
         );
@@ -52,6 +53,7 @@ public class ClientCommandService : IClientCommandService
             command.FirstName,
             command.LastName,
             command.MonthlyIncome,
+            command.IncomeCurrency,
             command.Phone,
             new EmailAddress(command.Email)
         );

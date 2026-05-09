@@ -12,7 +12,7 @@ public static class VehicleResourceFromEntityAssembler
             entity.Brand,
             entity.Model,
             entity.Price,
-            entity.Currency,
+            entity.Currency.ToString(),
             entity.Year,
             entity.Type.ToString()
         );

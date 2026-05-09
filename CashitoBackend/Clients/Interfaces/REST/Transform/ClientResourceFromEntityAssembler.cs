@@ -13,6 +13,7 @@ public static class ClientResourceFromEntityAssembler
             entity.FirstName,
             entity.LastName,
             entity.MonthlyIncome,
+            entity.IncomeCurrency.ToString(),
             entity.Phone,
             entity.Email.ToString()
         );

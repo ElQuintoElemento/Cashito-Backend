@@ -12,6 +12,7 @@ public static class CreditResourceFromEntityAssembler
             entity.ClientId,
             entity.VehicleId,
             entity.VehiclePrice,
+            entity.Currency.ToString(),
             entity.DownPayment,
             entity.FinancedAmount,
             entity.InterestRate,

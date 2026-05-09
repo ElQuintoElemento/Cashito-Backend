@@ -1,6 +1,7 @@
 ﻿using CashitoBackend.Credits.Domain.Model.Entities;
 using CashitoBackend.Credits.Domain.Model.Exceptions;
 using CashitoBackend.Credits.Domain.Model.ValueObjects;
+using CashitoBackend.Shared.Domain.Model.ValueObjects;
 
 namespace CashitoBackend.Credits.Domain.Model.Aggregates;
 
@@ -13,6 +14,7 @@ public class Credit
     public int VehicleId { get; private set; }
 
     public decimal VehiclePrice { get; private set; }
+    public Currency Currency { get; private set; } = Currency.PEN;
     public decimal DownPayment { get; private set; }
     public decimal FinancedAmount { get; private set; }
 
@@ -41,6 +43,7 @@ public class Credit
         int clientId,
         int vehicleId,
         decimal vehiclePrice,
+        Currency currency,
         decimal downPayment,
         decimal interestRate,
         int termMonths,
@@ -65,6 +68,7 @@ public class Credit
         VehicleId = vehicleId;
 
         VehiclePrice = vehiclePrice;
+        Currency = currency;
         DownPayment = downPayment;
         FinancedAmount = vehiclePrice - downPayment;
 

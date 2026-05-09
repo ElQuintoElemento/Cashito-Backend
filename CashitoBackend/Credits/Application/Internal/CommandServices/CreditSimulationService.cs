@@ -11,7 +11,7 @@ public class CreditSimulationService : ICreditSimulationService
     {
         var financedAmount = command.VehiclePrice - command.DownPayment;
 
-        // 🔥 1. TIPO DE TASA (TEA / TNA)
+        // 1. TIPO DE TASA (TEA / TNA)
         decimal monthlyRate;
 
         if (command.RateType == "TEA")
