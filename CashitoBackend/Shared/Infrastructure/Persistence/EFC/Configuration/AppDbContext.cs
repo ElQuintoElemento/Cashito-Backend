@@ -2,6 +2,7 @@
 using CashitoBackend.Credits.Domain.Model.Aggregates;
 using CashitoBackend.Credits.Domain.Model.Entities;
 using CashitoBackend.IAM.Domain.Model.Aggregates;
+using CashitoBackend.Notifications.Domain.Model.Aggregates;
 using CashitoBackend.Shared.Domain.Model.ValueObjects;
 using CashitoBackend.Shared.Infrastructure.Persistence.EFC.Configuration.Extensions;
 using CashitoBackend.Vehicles.Domain.Model.Aggregates;
@@ -17,6 +18,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
     public DbSet<Vehicle> Vehicles { get; set; }
     public DbSet<Credit> Credits { get; set; }
     public DbSet<Installment> Installments { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
     
     protected override void OnConfiguring(DbContextOptionsBuilder builder)
     {
@@ -207,6 +209,37 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             e.Property(i => i.CreditId).IsRequired();
             e.Property(i => i.IsPaid).IsRequired();
             e.Property(i => i.PaidAt);
+        });
+
+        // =========================
+        // NOTIFICATIONS
+        // =========================
+        builder.Entity<Notification>(e =>
+        {
+            e.HasKey(n => n.Id);
+            e.Property(n => n.Id).ValueGeneratedOnAdd();
+
+            e.Property(n => n.UserId).IsRequired();
+
+            e.Property(n => n.Title)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            e.Property(n => n.Message)
+                .IsRequired()
+                .HasMaxLength(500);
+
+            e.Property(n => n.Type)
+                .IsRequired()
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            e.Property(n => n.IsRead).IsRequired();
+
+            e.Property(n => n.CreatedAt).IsRequired();
+
+            e.HasIndex(n => n.UserId);
+            e.HasIndex(n => new { n.UserId, n.IsRead });
         });
     }
 }

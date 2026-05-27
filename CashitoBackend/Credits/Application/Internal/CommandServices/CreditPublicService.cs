@@ -10,11 +10,16 @@ public class CreditPublicService : ICreditPublicService
 {
     private readonly ICreditRepository _creditRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly CreditNotificationService _notificationService;
 
-    public CreditPublicService(ICreditRepository creditRepository, IUnitOfWork unitOfWork)
+    public CreditPublicService(
+        ICreditRepository creditRepository,
+        IUnitOfWork unitOfWork,
+        CreditNotificationService notificationService)
     {
         _creditRepository = creditRepository;
         _unitOfWork = unitOfWork;
+        _notificationService = notificationService;
     }
 
     public async Task<Credit?> GetCreditAsync(int creditId, string token)
@@ -40,10 +45,17 @@ public class CreditPublicService : ICreditPublicService
         if (!IsTokenValid(credit, token))
             return false;
 
-        credit!.PayInstallment(installmentNumber);
+        var paidInstallment = credit!.Schedule.FirstOrDefault(i => i.Number == installmentNumber);
+        credit.PayInstallment(installmentNumber);
 
         _creditRepository.Update(credit);
         await _unitOfWork.CompleteAsync();
+
+        var amount = paidInstallment?.TotalPayment ?? 0;
+        await _notificationService.OnInstallmentPaidAsync(credit, installmentNumber, amount);
+
+        if (credit.Schedule.All(i => i.IsPaid))
+            await _notificationService.OnCreditCompletedAsync(credit);
 
         return true;
     }
@@ -59,6 +71,7 @@ public class CreditPublicService : ICreditPublicService
 
         _creditRepository.Update(credit);
         await _unitOfWork.CompleteAsync();
+        await _notificationService.OnCreditApprovedAsync(credit);
 
         return true;
     }
@@ -74,6 +87,7 @@ public class CreditPublicService : ICreditPublicService
 
         _creditRepository.Update(credit);
         await _unitOfWork.CompleteAsync();
+        await _notificationService.OnCreditRejectedAsync(credit);
 
         return true;
     }

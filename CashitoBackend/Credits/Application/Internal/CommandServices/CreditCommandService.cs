@@ -12,15 +12,18 @@ public class CreditCommandService : ICreditCommandService
     private readonly ICreditSimulationService _simulationService;
     private readonly ICreditRepository _creditRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly CreditNotificationService _notificationService;
 
     public CreditCommandService(
         ICreditRepository creditRepository,
         IUnitOfWork unitOfWork,
-        ICreditSimulationService simulationService)
+        ICreditSimulationService simulationService,
+        CreditNotificationService notificationService)
     {
         _creditRepository = creditRepository;
         _unitOfWork = unitOfWork;
         _simulationService = simulationService;
+        _notificationService = notificationService;
     }
 
     // 🔹 SIMULACIÓN
@@ -84,6 +87,7 @@ public class CreditCommandService : ICreditCommandService
 
         _creditRepository.Update(credit);
         await _unitOfWork.CompleteAsync();
+        await _notificationService.OnCreditApprovedAsync(credit);
 
         return true;
     }
@@ -116,6 +120,7 @@ public class CreditCommandService : ICreditCommandService
 
         _creditRepository.Update(credit);
         await _unitOfWork.CompleteAsync();
+        await _notificationService.OnCreditRejectedAsync(credit);
 
         return true;
     }
@@ -132,6 +137,7 @@ public class CreditCommandService : ICreditCommandService
 
         _creditRepository.Update(credit);
         await _unitOfWork.CompleteAsync();
+        await _notificationService.OnCreditCompletedAsync(credit);
 
         return true;
     }
@@ -144,10 +150,17 @@ public class CreditCommandService : ICreditCommandService
         if (credit == null || credit.UserId != userId)
             return false;
 
+        var paidInstallment = credit.Schedule.FirstOrDefault(i => i.Number == installmentNumber);
         credit.PayInstallment(installmentNumber);
 
         _creditRepository.Update(credit);
         await _unitOfWork.CompleteAsync();
+
+        var amount = paidInstallment?.TotalPayment ?? 0;
+        await _notificationService.OnInstallmentPaidAsync(credit, installmentNumber, amount);
+
+        if (credit.Schedule.All(i => i.IsPaid))
+            await _notificationService.OnCreditCompletedAsync(credit);
 
         return true;
     }
