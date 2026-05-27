@@ -11,18 +11,25 @@ public static class CreditResourceFromEntityAssembler
             entity.Id,
             entity.ClientId,
             entity.VehicleId,
+
             entity.VehiclePrice,
             entity.Currency.ToString(),
             entity.DownPayment,
             entity.FinancedAmount,
+
             entity.InterestRate,
             entity.TermMonths,
             entity.RateType,
+
             entity.GracePeriod,
+            entity.GraceType.ToString(),
+
             entity.Insurance,
+
             entity.Tcea,
             entity.Van,
             entity.Tir,
+
             entity.Status.ToString(),
             entity.PublicToken
         );

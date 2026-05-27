@@ -13,7 +13,10 @@ public record CreditResource(
     decimal InterestRate,
     int TermMonths,
     string RateType,
+
     int GracePeriod,
+    string GraceType,
+
     decimal Insurance,
 
     decimal Tcea,

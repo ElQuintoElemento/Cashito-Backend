@@ -42,6 +42,7 @@ public class CreditCommandService : ICreditCommandService
             command.TermMonths,
             command.RateType,
             command.GracePeriod,
+            command.GraceType,
             command.Insurance
         );
 
@@ -58,6 +59,7 @@ public class CreditCommandService : ICreditCommandService
             command.TermMonths,
             command.RateType,
             command.GracePeriod,
+            command.GraceType,
             command.Insurance
         );
 

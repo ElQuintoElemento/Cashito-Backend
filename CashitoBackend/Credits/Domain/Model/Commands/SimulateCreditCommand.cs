@@ -1,4 +1,5 @@
-﻿using CashitoBackend.Shared.Domain.Model.ValueObjects;
+﻿using CashitoBackend.Credits.Domain.Model.ValueObjects;
+using CashitoBackend.Shared.Domain.Model.ValueObjects;
 
 namespace CashitoBackend.Credits.Domain.Model.Commands;
 
@@ -12,5 +13,6 @@ public record SimulateCreditCommand(
     int TermMonths,
     string RateType,
     int GracePeriod,
+    GraceType GraceType,
     decimal Insurance
 );
