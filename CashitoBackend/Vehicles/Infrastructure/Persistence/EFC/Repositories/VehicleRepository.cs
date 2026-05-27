@@ -31,6 +31,21 @@ public class VehicleRepository : IVehicleRepository
             .Where(v => v.UserId == userId)
             .ToListAsync();
     }
+
+    public async Task<int> CountByUserIdAsync(int userId)
+    {
+        return await _context.Vehicles
+            .CountAsync(v => v.UserId == userId);
+    }
+
+    public async Task<IReadOnlyList<Vehicle>> FindRecentByUserIdAsync(int userId, int limit)
+    {
+        return await _context.Vehicles
+            .Where(v => v.UserId == userId)
+            .OrderByDescending(v => v.Id)
+            .Take(limit)
+            .ToListAsync();
+    }
     
     public void Update(Vehicle vehicle)
     {

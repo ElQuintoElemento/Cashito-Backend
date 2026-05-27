@@ -10,6 +10,10 @@ public interface IClientRepository
 
     Task<IEnumerable<Client>> FindByUserIdAsync(int userId);
 
+    Task<int> CountByUserIdAsync(int userId);
+
+    Task<IReadOnlyList<Client>> FindRecentByUserIdAsync(int userId, int limit);
+
     void Update(Client client);
 
     void Remove(Client client);

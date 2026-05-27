@@ -31,6 +31,21 @@ public class ClientRepository : IClientRepository
             .Where(c => c.UserId == userId)
             .ToListAsync();
     }
+
+    public async Task<int> CountByUserIdAsync(int userId)
+    {
+        return await _context.Clients
+            .CountAsync(c => c.UserId == userId);
+    }
+
+    public async Task<IReadOnlyList<Client>> FindRecentByUserIdAsync(int userId, int limit)
+    {
+        return await _context.Clients
+            .Where(c => c.UserId == userId)
+            .OrderByDescending(c => c.Id)
+            .Take(limit)
+            .ToListAsync();
+    }
     
     public void Update(Client client)
     {
