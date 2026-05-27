@@ -18,4 +18,12 @@ public interface ICreditRepository
     void Remove(Credit credit);
     
     Task<IEnumerable<Credit>> FindByUserIdAndStatusAsync(int userId, CreditStatus status);
+
+    Task<int> CountActiveByUserIdAsync(int userId);
+
+    Task<decimal> SumFinancedAmountByUserIdAsync(int userId);
+
+    Task<int> CountByUserIdAsync(int userId);
+
+    Task<decimal> AverageInterestRateByUserIdAsync(int userId);
 }

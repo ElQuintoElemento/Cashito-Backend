@@ -5,6 +5,8 @@ using CashitoBackend.Clients.Domain.Services;
 using CashitoBackend.Clients.Infrastructure.Persistence.EFC.Repositories;
 using CashitoBackend.Credits.Application.Internal.CommandServices;
 using CashitoBackend.Credits.Application.Internal.QueryServices;
+using CashitoBackend.Dashboard.Application.Internal.QueryServices;
+using CashitoBackend.Dashboard.Domain.Services;
 using CashitoBackend.Credits.Domain.Repositories;
 using CashitoBackend.Credits.Domain.Services;
 using CashitoBackend.Credits.Infrastructure.Persistence.EFC.Repositories;
@@ -149,6 +151,9 @@ builder.Services.AddScoped<ICreditRepository, CreditRepository>();
 builder.Services.AddScoped<ICreditCommandService, CreditCommandService>();
 builder.Services.AddScoped<ICreditQueryService, CreditQueryService>();
 builder.Services.AddScoped<ICreditSimulationService, CreditSimulationService>();
+
+// Dashboard Bounded Context
+builder.Services.AddScoped<IDashboardQueryService, DashboardQueryService>();
 
 // Shared Bounded Context
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
