@@ -65,6 +65,43 @@ public class CreditRepository : ICreditRepository
             .ToListAsync();
     }
 
+    public async Task<int> CountActiveByUserIdAsync(int userId)
+    {
+        return await _context.Credits
+            .AsNoTracking()
+            .CountAsync(c => c.UserId == userId && c.Status == CreditStatus.Active);
+    }
+
+    public async Task<decimal> SumFinancedAmountByUserIdAsync(int userId)
+    {
+        return await _context.Credits
+            .AsNoTracking()
+            .Where(c => c.UserId == userId)
+            .SumAsync(c => (decimal?)c.FinancedAmount) ?? 0;
+    }
+
+    public async Task<int> CountByUserIdAsync(int userId)
+    {
+        return await _context.Credits
+            .AsNoTracking()
+            .CountAsync(c => c.UserId == userId);
+    }
+
+    public async Task<decimal> AverageInterestRateByUserIdAsync(int userId)
+    {
+        var hasCredits = await _context.Credits
+            .AsNoTracking()
+            .AnyAsync(c => c.UserId == userId);
+
+        if (!hasCredits)
+            return 0;
+
+        return await _context.Credits
+            .AsNoTracking()
+            .Where(c => c.UserId == userId)
+            .AverageAsync(c => c.InterestRate);
+    }
+
     // =========================
     // UPDATE
     // =========================
