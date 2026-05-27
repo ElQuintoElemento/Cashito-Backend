@@ -42,6 +42,12 @@ public class RequestAuthorizationMiddleware
             await _next(context);
             return;
         }
+
+        if (context.Request.Path.StartsWithSegments("/api/public", StringComparison.OrdinalIgnoreCase))
+        {
+            await _next(context);
+            return;
+        }
         
         // skip authorization if endpoint is decorated with [AllowAnonymous] attribute
         var endpoint = context.GetEndpoint();
