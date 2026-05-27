@@ -151,6 +151,7 @@ builder.Services.AddScoped<ICreditRepository, CreditRepository>();
 builder.Services.AddScoped<ICreditCommandService, CreditCommandService>();
 builder.Services.AddScoped<ICreditQueryService, CreditQueryService>();
 builder.Services.AddScoped<ICreditSimulationService, CreditSimulationService>();
+builder.Services.AddScoped<ICreditPublicService, CreditPublicService>();
 
 // Dashboard Bounded Context
 builder.Services.AddScoped<IDashboardQueryService, DashboardQueryService>();
