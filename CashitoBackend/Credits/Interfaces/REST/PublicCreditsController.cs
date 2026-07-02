@@ -1,4 +1,4 @@
-﻿using CashitoBackend.Credits.Domain.Services;
+using CashitoBackend.Credits.Domain.Services;
 using CashitoBackend.Credits.Interfaces.REST.Transform;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +11,14 @@ namespace CashitoBackend.Credits.Interfaces.REST;
 public class PublicCreditsController : ControllerBase
 {
     private readonly ICreditPublicService _publicService;
+    private readonly ICreditExportService _exportService;
 
-    public PublicCreditsController(ICreditPublicService publicService)
+    public PublicCreditsController(
+        ICreditPublicService publicService,
+        ICreditExportService exportService)
     {
         _publicService = publicService;
+        _exportService = exportService;
     }
 
     [HttpGet("{id:int}")]
@@ -37,6 +41,42 @@ public class PublicCreditsController : ControllerBase
             return Unauthorized();
 
         return Ok(schedule.Select(InstallmentResourceFromEntityAssembler.ToResourceFromEntity));
+    }
+
+    [HttpGet("{id:int}/pdf")]
+    public async Task<IActionResult> ExportPdf(int id, [FromQuery] string token)
+    {
+        try
+        {
+            var pdfBytes = await _exportService.GeneratePdfPublicAsync(id, token);
+            return File(pdfBytes, "application/pdf", $"Credit-{id}.pdf");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("{id:int}/excel")]
+    public async Task<IActionResult> ExportExcel(int id, [FromQuery] string token)
+    {
+        try
+        {
+            var excelBytes = await _exportService.GenerateExcelPublicAsync(id, token);
+            return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Credit-{id}.xlsx");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpPut("{id:int}/installments/{number:int}/pay")]

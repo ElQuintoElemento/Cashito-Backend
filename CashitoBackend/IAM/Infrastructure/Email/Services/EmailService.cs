@@ -35,9 +35,10 @@ public class EmailService : IEmailService
         message.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.SenderEmail));
         message.To.Add(MailboxAddress.Parse(to));
         message.Subject = subject;
-        message.Body = new TextPart("plain") { Text = body };
+        message.Body = new TextPart("html") { Text = body };
 
         using var smtpClient = new SmtpClient();
+        smtpClient.Timeout = 5000; // 5 seconds timeout
         try
         {
             _logger.LogInformation("[EMAIL] Connecting to SMTP {Server}:{Port}...", _emailSettings.SmtpServer, _emailSettings.Port);

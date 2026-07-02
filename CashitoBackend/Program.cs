@@ -160,6 +160,7 @@ builder.Services.AddScoped<ICreditQueryService, CreditQueryService>();
 builder.Services.AddScoped<ICreditSimulationService, CreditSimulationService>();
 builder.Services.AddScoped<CreditNotificationService>();
 builder.Services.AddScoped<ICreditPublicService, CreditPublicService>();
+builder.Services.AddScoped<ICreditExportService, CreditExportService>();
 
 // Dashboard Bounded Context
 builder.Services.AddScoped<IDashboardQueryService, DashboardQueryService>();
@@ -188,6 +189,9 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IHashingService, HashingService>();
 builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
+
+// Initialize QuestPDF License
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 // ───────────── Build & DB ensure ─────────────a
 var app = builder.Build();

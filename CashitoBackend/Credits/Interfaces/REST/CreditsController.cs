@@ -1,4 +1,4 @@
-﻿using CashitoBackend.Credits.Domain.Model.Queries;
+using CashitoBackend.Credits.Domain.Model.Queries;
 using CashitoBackend.Credits.Domain.Services;
 using CashitoBackend.Credits.Interfaces.REST.Resources;
 using CashitoBackend.Credits.Interfaces.REST.Transform;
@@ -15,13 +15,16 @@ public class CreditsController : ControllerBase
 {
     private readonly ICreditCommandService _commandService;
     private readonly ICreditQueryService _queryService;
+    private readonly ICreditExportService _exportService;
 
     public CreditsController(
         ICreditCommandService commandService,
-        ICreditQueryService queryService)
+        ICreditQueryService queryService,
+        ICreditExportService exportService)
     {
         _commandService = commandService;
         _queryService = queryService;
+        _exportService = exportService;
     }
 
     // =========================
@@ -104,6 +107,50 @@ public class CreditsController : ControllerBase
         var result = await _queryService.Handle(new GetCreditScheduleQuery(id, userId));
 
         return Ok(result.Select(InstallmentResourceFromEntityAssembler.ToResourceFromEntity));
+    }
+
+    // =========================
+    // 📄 EXPORTAR PDF
+    // =========================
+    [HttpGet("{id:int}/pdf")]
+    public async Task<IActionResult> ExportPdf(int id)
+    {
+        var userId = User.GetUserId();
+        try
+        {
+            var pdfBytes = await _exportService.GeneratePdfAsync(id, userId);
+            return File(pdfBytes, "application/pdf", $"Credit-{id}.pdf");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    // =========================
+    // 📊 EXPORTAR EXCEL
+    // =========================
+    [HttpGet("{id:int}/excel")]
+    public async Task<IActionResult> ExportExcel(int id)
+    {
+        var userId = User.GetUserId();
+        try
+        {
+            var excelBytes = await _exportService.GenerateExcelAsync(id, userId);
+            return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Credit-{id}.xlsx");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     // =========================

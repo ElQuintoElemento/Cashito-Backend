@@ -1,4 +1,4 @@
-﻿using CashitoBackend.Credits.Domain.Model.Entities;
+using CashitoBackend.Credits.Domain.Model.Entities;
 using CashitoBackend.Credits.Domain.Model.Exceptions;
 using CashitoBackend.Credits.Domain.Model.ValueObjects;
 using CashitoBackend.Shared.Domain.Model.ValueObjects;
@@ -143,11 +143,24 @@ public class Credit
     // =========================
     public void PayInstallment(int number)
     {
+        if (Status != CreditStatus.Approved && Status != CreditStatus.Active)
+            throw new CreditDomainException("Cannot pay installment in the current credit status");
+
         var installment = Schedule.FirstOrDefault(i => i.Number == number);
 
         if (installment == null)
             throw new CreditDomainException("Installment not found");
 
         installment.MarkAsPaid();
+
+        if (Status == CreditStatus.Approved)
+        {
+            Activate();
+        }
+
+        if (Schedule.All(i => i.IsPaid))
+        {
+            Complete();
+        }
     }
 }
