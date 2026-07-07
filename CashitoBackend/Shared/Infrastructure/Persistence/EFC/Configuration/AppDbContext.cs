@@ -1,4 +1,5 @@
-﻿using CashitoBackend.Clients.Domain.Model.Aggregates;
+using CashitoBackend.Clients.Domain.Model.Aggregates;
+using CashitoBackend.Clients.Domain.Model.ValueObjects;
 using CashitoBackend.Credits.Domain.Model.Aggregates;
 using CashitoBackend.Credits.Domain.Model.Entities;
 using CashitoBackend.IAM.Domain.Model.Aggregates;
@@ -50,6 +51,8 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
                 )
                 .HasColumnName("email")
                 .HasMaxLength(255);
+
+            e.HasIndex(u => u.Email).IsUnique();
         });
         
         // OPTIONAL: soft delete
@@ -69,7 +72,12 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
                 .IsRequired();
 
             e.Property(c => c.Dni)
+                .HasConversion(
+                    dni => dni.Value,
+                    value => new Dni(value)
+                )
                 .IsRequired()
+                .HasColumnName("dni")
                 .HasMaxLength(20);
 
             e.Property(c => c.FirstName)
@@ -88,6 +96,11 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
                 .HasConversion<string>();
 
             e.Property(c => c.Phone)
+                .HasConversion(
+                    phone => phone != null ? phone.Value : null,
+                    value => string.IsNullOrEmpty(value) ? null : new PhoneNumber(value)
+                )
+                .HasColumnName("phone")
                 .HasMaxLength(20);
             
             e.Property(c => c.Email)
@@ -169,6 +182,24 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             e.Property(c => c.Van).HasColumnType("decimal(18,2)");
             e.Property(c => c.Tir).HasColumnType("decimal(10,6)");
 
+            // Missing fields mapped in Package 3
+            e.Property(c => c.InitialPaymentPercentage).HasColumnType("decimal(10,4)");
+            e.Property(c => c.BalloonPaymentPercentage).HasColumnType("decimal(10,4)");
+            e.Property(c => c.BalloonPaymentAmount).HasColumnType("decimal(18,2)");
+            e.Property(c => c.AmortizableCapital).HasColumnType("decimal(18,2)");
+            e.Property(c => c.Capitalization).HasMaxLength(50);
+            e.Property(c => c.DesgravamenInsuranceRate).HasColumnType("decimal(10,6)");
+            e.Property(c => c.VehicularInsuranceRate).HasColumnType("decimal(10,6)");
+            e.Property(c => c.Portes).HasColumnType("decimal(18,2)");
+            e.Property(c => c.DisbursementFee).HasColumnType("decimal(18,2)");
+            e.Property(c => c.NotaryExpenses).HasColumnType("decimal(18,2)");
+            e.Property(c => c.SoatAmount).HasColumnType("decimal(18,2)");
+            e.Property(c => c.OtherExpenses).HasColumnType("decimal(18,2)");
+            e.Property(c => c.DisbursementDate);
+            e.Property(c => c.BaseInstallment).HasColumnType("decimal(18,2)");
+            e.Property(c => c.EvaluationFee).HasColumnType("decimal(18,2)");
+            e.Property(c => c.OpportunityRate).HasColumnType("decimal(10,4)");
+
             // 🔥 ENUM
             e.Property(c => c.Status)
                 .HasConversion<string>()
@@ -209,6 +240,17 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             e.Property(i => i.CreditId).IsRequired();
             e.Property(i => i.IsPaid).IsRequired();
             e.Property(i => i.PaidAt);
+
+            // Missing fields mapped in Package 3
+            e.Property(i => i.BaseInstallment).HasColumnType("decimal(18,2)");
+            e.Property(i => i.BeginningBalance).HasColumnType("decimal(18,2)");
+            e.Property(i => i.DesgravamenInsurance).HasColumnType("decimal(18,2)");
+            e.Property(i => i.VehicularInsurance).HasColumnType("decimal(18,2)");
+            e.Property(i => i.Portes).HasColumnType("decimal(18,2)");
+            e.Property(i => i.OtherExpenses).HasColumnType("decimal(18,2)");
+            e.Property(i => i.CashFlow).HasColumnType("decimal(18,2)");
+            e.Property(i => i.IsBalloon).IsRequired();
+            e.Property(i => i.BalloonAmount).HasColumnType("decimal(18,2)");
         });
 
         // =========================

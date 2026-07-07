@@ -1,4 +1,4 @@
-﻿using CashitoBackend.Credits.Domain.Model.Commands;
+using CashitoBackend.Credits.Domain.Model.Commands;
 using CashitoBackend.Credits.Domain.Model.ValueObjects;
 using CashitoBackend.Credits.Interfaces.REST.Resources;
 using CashitoBackend.Shared.Domain.Model.ValueObjects;
@@ -26,7 +26,18 @@ public static class SimulateCreditCommandFromResourceAssembler
             resource.RateType,
             resource.GracePeriod,
             graceType,
-            resource.Insurance
+            resource.Insurance,
+            resource.OpportunityRate,
+            resource.Capitalization,
+            resource.DesgravamenInsuranceRate,
+            resource.VehicularInsuranceRate,
+            resource.Portes,
+            resource.DisbursementFee,
+            resource.EvaluationFee,
+            resource.NotaryExpenses,
+            resource.SoatAmount,
+            resource.OtherExpenses,
+            resource.BalloonPaymentPercentage
         );
     }
 }

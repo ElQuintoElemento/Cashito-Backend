@@ -1,4 +1,4 @@
-﻿using CashitoBackend.Clients.Domain.Model.Aggregates;
+using CashitoBackend.Clients.Domain.Model.Aggregates;
 using CashitoBackend.Clients.Domain.Repositories;
 using CashitoBackend.Shared.Infrastructure.Persistence.EFC.Configuration;
 using Microsoft.EntityFrameworkCore;
@@ -55,5 +55,11 @@ public class ClientRepository : IClientRepository
     public void Remove(Client client)
     {
         _context.Clients.Remove(client);
+    }
+
+    public async Task<bool> ExistsByDniAsync(CashitoBackend.Clients.Domain.Model.ValueObjects.Dni dni)
+    {
+        return await _context.Clients
+            .AnyAsync(c => c.Dni == dni);
     }
 }

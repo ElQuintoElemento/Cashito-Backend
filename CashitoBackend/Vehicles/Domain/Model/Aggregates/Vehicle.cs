@@ -1,4 +1,4 @@
-﻿using CashitoBackend.Shared.Domain.Model.ValueObjects;
+using CashitoBackend.Shared.Domain.Model.ValueObjects;
 using CashitoBackend.Vehicles.Domain.Model.Exceptions;
 using CashitoBackend.Vehicles.Domain.Model.ValueObjects;
 
@@ -40,8 +40,8 @@ public class Vehicle
         if (price <= 0)
             throw new VehicleDomainException("Price must be greater than 0");
 
-        if (year < 1900)
-            throw new VehicleDomainException("Invalid year");
+        if (year < (DateTime.UtcNow.Year - 2))
+            throw new VehicleDomainException($"Manufacturing year must be {DateTime.UtcNow.Year - 2} or later");
         
         
         UserId = userId;
@@ -70,8 +70,8 @@ public class Vehicle
         if (price <= 0)
             throw new VehicleDomainException("Price must be greater than 0");
 
-        if (year < 1900)
-            throw new VehicleDomainException("Invalid year");
+        if (year < (DateTime.UtcNow.Year - 2))
+            throw new VehicleDomainException($"Manufacturing year must be {DateTime.UtcNow.Year - 2} or later");
         
         Brand = brand;
         Model = model;

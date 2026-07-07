@@ -9,7 +9,7 @@ public static class DashboardRecentClientResourceFromEntityAssembler
         new DashboardRecentClientResource(
             entity.Id,
             $"{entity.FirstName} {entity.LastName}".Trim(),
-            entity.Dni,
-            entity.Phone,
+            entity.Dni.Value,
+            entity.Phone?.Value ?? string.Empty,
             entity.Email.ToString());
 }

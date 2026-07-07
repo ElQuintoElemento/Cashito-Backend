@@ -1,4 +1,4 @@
-﻿using CashitoBackend.Credits.Application.Internal.DTOs;
+using CashitoBackend.Credits.Application.Internal.DTOs;
 using CashitoBackend.Credits.Domain.Model.Aggregates;
 using CashitoBackend.Credits.Domain.Model.Commands;
 using CashitoBackend.Credits.Domain.Repositories;
@@ -46,7 +46,18 @@ public class CreditCommandService : ICreditCommandService
             command.RateType,
             command.GracePeriod,
             command.GraceType,
-            command.Insurance
+            command.Insurance,
+            command.OpportunityRate,
+            command.Capitalization,
+            command.DesgravamenInsuranceRate,
+            command.VehicularInsuranceRate,
+            command.Portes,
+            command.DisbursementFee,
+            command.EvaluationFee,
+            command.NotaryExpenses,
+            command.SoatAmount,
+            command.OtherExpenses,
+            command.BalloonPaymentPercentage
         );
 
         var simulation = _simulationService.Simulate(simulateCommand);
@@ -65,6 +76,22 @@ public class CreditCommandService : ICreditCommandService
             command.GraceType,
             command.Insurance
         );
+        credit.Capitalization = command.Capitalization;
+        credit.DesgravamenInsuranceRate = command.DesgravamenInsuranceRate;
+        credit.VehicularInsuranceRate = command.VehicularInsuranceRate;
+        credit.Portes = command.Portes;
+        credit.DisbursementFee = command.DisbursementFee;
+        credit.EvaluationFee = command.EvaluationFee;
+        credit.NotaryExpenses = command.NotaryExpenses;
+        credit.SoatAmount = command.SoatAmount;
+        credit.OtherExpenses = command.OtherExpenses;
+        credit.OpportunityRate = command.OpportunityRate;
+
+        credit.InitialPaymentPercentage = command.VehiclePrice > 0 ? (command.DownPayment / command.VehiclePrice) * 100m : 0;
+        credit.BalloonPaymentPercentage = command.BalloonPaymentPercentage;
+        credit.BalloonPaymentAmount = command.VehiclePrice * (command.BalloonPaymentPercentage / 100m);
+        credit.AmortizableCapital = (command.VehiclePrice - command.DownPayment) - credit.BalloonPaymentAmount;
+        credit.BaseInstallment = simulation.Installments.Count > 0 ? simulation.Installments[0].BaseInstallment : 0;
 
         credit.SetResults(simulation.Tcea, simulation.Van, simulation.Tir);
         credit.SetSchedule(simulation.Installments);

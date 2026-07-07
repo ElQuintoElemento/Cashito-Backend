@@ -1,4 +1,5 @@
-﻿using CashitoBackend.Clients.Domain.Model.Aggregates;
+using CashitoBackend.Clients.Domain.Model.Aggregates;
+using CashitoBackend.Clients.Domain.Model.ValueObjects;
 
 namespace CashitoBackend.Clients.Domain.Repositories;
 
@@ -17,4 +18,6 @@ public interface IClientRepository
     void Update(Client client);
 
     void Remove(Client client);
+
+    Task<bool> ExistsByDniAsync(Dni dni);
 }

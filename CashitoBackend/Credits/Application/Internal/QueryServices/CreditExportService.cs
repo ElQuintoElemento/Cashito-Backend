@@ -84,7 +84,7 @@ public class CreditExportService : ICreditExportService
         if (client != null)
         {
             clientName = $"{client.FirstName} {client.LastName}";
-            clientDni = client.Dni;
+            clientDni = client.Dni.Value;
         }
 
         var vehicle = await _vehicleRepository.FindByIdAsync(credit.VehicleId);
@@ -277,7 +277,7 @@ public class CreditExportService : ICreditExportService
         if (client != null)
         {
             clientName = $"{client.FirstName} {client.LastName}";
-            clientDni = client.Dni;
+            clientDni = client.Dni.Value;
         }
 
         var vehicle = _vehicleRepository.FindByIdAsync(credit.VehicleId).GetAwaiter().GetResult();

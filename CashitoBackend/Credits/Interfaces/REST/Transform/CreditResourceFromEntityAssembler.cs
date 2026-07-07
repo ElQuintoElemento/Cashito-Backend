@@ -1,4 +1,4 @@
-﻿using CashitoBackend.Credits.Domain.Model.Aggregates;
+using CashitoBackend.Credits.Domain.Model.Aggregates;
 using CashitoBackend.Credits.Interfaces.REST.Resources;
 
 namespace CashitoBackend.Credits.Interfaces.REST.Transform;
@@ -31,7 +31,22 @@ public static class CreditResourceFromEntityAssembler
             entity.Tir,
 
             entity.Status.ToString(),
-            entity.PublicToken
+            entity.PublicToken,
+            entity.Capitalization,
+            entity.DesgravamenInsuranceRate,
+            entity.VehicularInsuranceRate,
+            entity.Portes,
+            entity.DisbursementFee,
+            entity.EvaluationFee,
+            entity.NotaryExpenses,
+            entity.SoatAmount,
+            entity.OtherExpenses,
+            entity.AmortizableCapital,
+            entity.InitialPaymentPercentage,
+            entity.BalloonPaymentPercentage,
+            entity.BalloonPaymentAmount,
+            entity.BaseInstallment,
+            entity.OpportunityRate
         );
     }
 }

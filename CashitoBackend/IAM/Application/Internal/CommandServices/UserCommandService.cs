@@ -52,13 +52,23 @@ public class UserCommandService(
      */
     public async Task<User> Handle(SignUpCommand command)
     {
+        if (string.IsNullOrWhiteSpace(command.Username) || command.Username.Length < 4)
+            throw new BadRequestException("Username must be at least 4 characters long");
+
+        if (string.IsNullOrWhiteSpace(command.Password) || command.Password.Length < 8)
+            throw new BadRequestException("Password must be at least 8 characters long");
+
         if (userRepository.ExistsByUsername(command.Username))
             throw new BadRequestException("Username already exists");
+
+        var emailVo = new EmailAddress(command.Email);
+        if (await userRepository.ExistsByEmailAsync(emailVo))
+            throw new BadRequestException("Email address already exists");
 
         var passwordHash = hashingService.HashPassword(command.Password);
 
         var user = new User(command.Username, passwordHash)
-            .UpdatePersonalInfo(command.FirstName, command.LastName, new EmailAddress(command.Email));
+            .UpdatePersonalInfo(command.FirstName, command.LastName, emailVo);
         
 
         await userRepository.AddAsync(user);
@@ -92,6 +102,9 @@ public class UserCommandService(
 
         if (!hashingService.VerifyPassword(command.CurrentPassword, user.PasswordHash))
             throw new BadRequestException("Current password is incorrect");
+
+        if (string.IsNullOrWhiteSpace(command.NewPassword) || command.NewPassword.Length < 8)
+            throw new BadRequestException("New password must be at least 8 characters long");
 
         var newHash = hashingService.HashPassword(command.NewPassword);
 

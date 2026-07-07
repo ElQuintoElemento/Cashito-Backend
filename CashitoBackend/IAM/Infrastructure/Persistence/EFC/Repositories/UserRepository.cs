@@ -57,4 +57,11 @@ public class UserRepository(AppDbContext context) : BaseRepository<User>(context
             .Where(u => u.Active) // No compara con 1 si es bool
             .ToListAsync();
     }
+
+    public async Task<bool> ExistsByEmailAsync(CashitoBackend.Shared.Domain.Model.ValueObjects.EmailAddress email)
+    {
+        return await Context.Set<User>()
+            .IgnoreQueryFilters()
+            .AnyAsync(user => user.Email == email);
+    }
 }

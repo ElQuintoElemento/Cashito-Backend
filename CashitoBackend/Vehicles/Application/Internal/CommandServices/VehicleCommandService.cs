@@ -1,8 +1,9 @@
-﻿using CashitoBackend.Shared.Domain.Repositories;
+using CashitoBackend.Shared.Domain.Repositories;
 using CashitoBackend.Vehicles.Domain.Model.Aggregates;
 using CashitoBackend.Vehicles.Domain.Model.Commands;
 using CashitoBackend.Vehicles.Domain.Repositories;
 using CashitoBackend.Vehicles.Domain.Services;
+using CashitoBackend.Shared.Domain.Exceptions;
 
 namespace CashitoBackend.Vehicles.Application.Internal.CommandServices;
 
@@ -21,15 +22,23 @@ public class VehicleCommandService : IVehicleCommandService
     
     public async Task<Vehicle> Handle(CreateVehicleCommand command, int userId)
     {
-        var vehicle = new Vehicle(
-            userId,
-            command.Brand,
-            command.Model,
-            command.Price,
-            command.Currency,
-            command.Year,
-            command.Type
-        );
+        Vehicle vehicle;
+        try
+        {
+            vehicle = new Vehicle(
+                userId,
+                command.Brand,
+                command.Model,
+                command.Price,
+                command.Currency,
+                command.Year,
+                command.Type
+            );
+        }
+        catch (Exception ex)
+        {
+            throw new BadRequestException(ex.Message);
+        }
 
         await _vehicleRepository.AddAsync(vehicle);
         await _unitOfWork.CompleteAsync();
@@ -47,14 +56,21 @@ public class VehicleCommandService : IVehicleCommandService
         if (vehicle.UserId != userId)
             throw new UnauthorizedAccessException("Not allowed");
 
-        vehicle.Update(
-            command.Brand,
-            command.Model,
-            command.Price,
-            command.Currency,
-            command.Year,
-            command.Type
-        );
+        try
+        {
+            vehicle.Update(
+                command.Brand,
+                command.Model,
+                command.Price,
+                command.Currency,
+                command.Year,
+                command.Type
+            );
+        }
+        catch (Exception ex)
+        {
+            throw new BadRequestException(ex.Message);
+        }
 
         _vehicleRepository.Update(vehicle);
         await _unitOfWork.CompleteAsync();

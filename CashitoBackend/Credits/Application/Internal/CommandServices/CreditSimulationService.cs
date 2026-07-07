@@ -1,8 +1,9 @@
-﻿using CashitoBackend.Credits.Application.Internal.DTOs;
+using CashitoBackend.Credits.Application.Internal.DTOs;
 using CashitoBackend.Credits.Domain.Model.Commands;
 using CashitoBackend.Credits.Domain.Model.Entities;
 using CashitoBackend.Credits.Domain.Model.ValueObjects;
 using CashitoBackend.Credits.Domain.Services;
+using CashitoBackend.Shared.Domain.Exceptions;
 
 namespace CashitoBackend.Credits.Application.Internal.CommandServices;
 
@@ -27,12 +28,23 @@ public class CreditSimulationService : ICreditSimulationService
         }
         else // TNA
         {
-            monthlyRate = command.InterestRate / 100m / 12m;
+            int m = GetCompoundingFrequency(command.Capitalization);
+            double tna = (double)(command.InterestRate / 100m);
+            double monthlyRateDouble = Math.Pow(1 + tna / m, (double)m / 12.0) - 1;
+            monthlyRate = (decimal)monthlyRateDouble;
         }
+
+        if (command.BalloonPaymentPercentage < 40m || command.BalloonPaymentPercentage > 50m)
+        {
+            throw new BadRequestException("Balloon payment percentage must be between 40% and 50%.");
+        }
+
+        var balloonPaymentAmount = command.VehiclePrice * (command.BalloonPaymentPercentage / 100m);
+        var capitalAmortizar = financedAmount - balloonPaymentAmount;
 
         int totalPeriods = command.TermMonths;
 
-        decimal balance = financedAmount;
+        decimal balance = capitalAmortizar;
 
         // =========================
         // APLICAR GRACIA
@@ -66,7 +78,16 @@ public class CreditSimulationService : ICreditSimulationService
 
         var schedule = new List<Installment>();
 
-        balance = financedAmount;
+        balance = capitalAmortizar;
+
+        // Apply grace capitalization to schedule balance starting point
+        for (int i = 1; i <= command.GracePeriod; i++)
+        {
+            if (command.GraceType == GraceType.Total)
+            {
+                balance += balance * monthlyRate;
+            }
+        }
 
         DateTime date = DateTime.UtcNow;
 
@@ -79,6 +100,12 @@ public class CreditSimulationService : ICreditSimulationService
             decimal interest = balance * monthlyRate;
             decimal amortization = 0;
             decimal totalPayment = 0;
+            decimal beginningBalance = balance;
+
+            decimal desgravamen = beginningBalance * (command.DesgravamenInsuranceRate / 100m);
+            decimal vehicular = command.VehiclePrice * (command.VehicularInsuranceRate / 100m);
+            decimal portes = command.Portes;
+            decimal otherExpenses = command.OtherExpenses;
 
             // PERIODO DE GRACIA
             if (i <= command.GracePeriod)
@@ -89,56 +116,91 @@ public class CreditSimulationService : ICreditSimulationService
 
                     // capitalización
                     balance += interest;
+
+                    desgravamen = 0;
+                    vehicular = 0;
+                    portes = 0;
+                    otherExpenses = 0;
                 }
                 else if (command.GraceType == GraceType.Partial)
                 {
-                    totalPayment = interest;
+                    totalPayment = interest + desgravamen + vehicular + portes + otherExpenses;
 
                     // no amortiza
                 }
             }
             else
             {
-                amortization = cuotaBase - interest;
+                if (i == totalPeriods)
+                {
+                    // Rounding residual adjustment
+                    amortization = beginningBalance;
+                }
+                else
+                {
+                    amortization = cuotaBase - interest;
+                }
 
-                totalPayment = cuotaBase;
+                totalPayment = (i == totalPeriods ? (amortization + interest) : cuotaBase) + desgravamen + vehicular + portes + otherExpenses;
 
                 balance -= amortization;
             }
 
-            // 🔥 SEGURO
-            totalPayment += command.Insurance;
+            bool isBalloon = false;
+            decimal balloonAmount = 0;
+            if (i == totalPeriods)
+            {
+                isBalloon = true;
+                balloonAmount = balloonPaymentAmount;
+                totalPayment += balloonAmount;
+            }
 
-            schedule.Add(new Installment(
+            var inst = new Installment(
                 i,
                 date.AddMonths(i),
                 decimal.Round(totalPayment, 2),
                 decimal.Round(interest, 2),
                 decimal.Round(amortization, 2),
                 decimal.Round(balance < 0 ? 0 : balance, 2)
-            ));
+            )
+            {
+                BaseInstallment = decimal.Round(i <= command.GracePeriod ? (command.GraceType == GraceType.Total ? 0 : interest) : (i == totalPeriods ? (amortization + interest) : cuotaBase), 2),
+                BeginningBalance = decimal.Round(beginningBalance, 2),
+                DesgravamenInsurance = decimal.Round(desgravamen, 2),
+                VehicularInsurance = decimal.Round(vehicular, 2),
+                Portes = decimal.Round(portes, 2),
+                OtherExpenses = decimal.Round(otherExpenses, 2),
+                CashFlow = decimal.Round(-totalPayment, 2),
+                IsBalloon = isBalloon,
+                BalloonAmount = decimal.Round(balloonAmount, 2)
+            };
+            schedule.Add(inst);
         }
 
         // =========================
         // FLUJOS DE CAJA
         // =========================
 
+        var netDisbursed = financedAmount - command.DisbursementFee - command.EvaluationFee - command.NotaryExpenses - command.SoatAmount;
+
         var cashFlows = new List<decimal>
         {
-            -financedAmount
+            netDisbursed
         };
 
-        cashFlows.AddRange(schedule.Select(s => s.TotalPayment));
+        cashFlows.AddRange(schedule.Select(s => s.CashFlow));
 
         var tir = CalculateIRR(cashFlows);
 
-        var van = CalculateNPV(monthlyRate, cashFlows);
+        double kAnnualDouble = (double)(command.OpportunityRate / 100m);
+        decimal monthlyOpportunityRate = (decimal)(Math.Pow(1 + kAnnualDouble, 1.0 / 12.0) - 1);
+        var van = CalculateNPV(monthlyOpportunityRate, cashFlows);
 
         var tcea = (decimal)(Math.Pow(1 + (double)tir, 12) - 1) * 100;
 
         return new SimulationResult
         {
-            Cuota = decimal.Round(cuotaBase + command.Insurance, 2),
+            Cuota = schedule.Count > command.GracePeriod ? schedule[command.GracePeriod].TotalPayment : (schedule.Count > 0 ? schedule[0].TotalPayment : 0),
             Installments = schedule,
             Tir = decimal.Round(tir * 100, 6),
             Van = decimal.Round(van, 2),
@@ -194,5 +256,22 @@ public class CreditSimulationService : ICreditSimulationService
         }
 
         return npv;
+    }
+
+    private static int GetCompoundingFrequency(string? capitalization)
+    {
+        if (string.IsNullOrWhiteSpace(capitalization))
+            throw new BadRequestException("Capitalization frequency is required for TNA rate type.");
+
+        return capitalization.Trim().ToLowerInvariant() switch
+        {
+            "daily" or "diaria" or "diario" => 360,
+            "monthly" or "mensual" => 12,
+            "bimonthly" or "bimestral" => 6,
+            "quarterly" or "trimestral" => 4,
+            "semi-annual" or "semestral" or "semianual" => 2,
+            "annual" or "anual" => 1,
+            _ => throw new BadRequestException($"Invalid capitalization frequency: {capitalization}")
+        };
     }
 }

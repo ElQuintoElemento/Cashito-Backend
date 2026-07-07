@@ -1,4 +1,4 @@
-﻿namespace CashitoBackend.Credits.Interfaces.REST.Resources;
+namespace CashitoBackend.Credits.Interfaces.REST.Resources;
 
 public record CreateCreditResource(
     int ClientId,
@@ -11,5 +11,16 @@ public record CreateCreditResource(
     string RateType,
     int GracePeriod,
     string GraceType,
-    decimal Insurance
+    decimal Insurance,
+    decimal OpportunityRate,
+    string? Capitalization = null,
+    decimal DesgravamenInsuranceRate = 0,
+    decimal VehicularInsuranceRate = 0,
+    decimal Portes = 0,
+    decimal DisbursementFee = 0,
+    decimal EvaluationFee = 0,
+    decimal NotaryExpenses = 0,
+    decimal SoatAmount = 0,
+    decimal OtherExpenses = 0,
+    decimal BalloonPaymentPercentage = 0
 );

@@ -35,6 +35,24 @@ public class Credit
 
     public string PublicToken { get; private set; }
 
+    // Missing fields added in Package 3
+    public decimal InitialPaymentPercentage { get; set; }
+    public decimal BalloonPaymentPercentage { get; set; }
+    public decimal BalloonPaymentAmount { get; set; }
+    public decimal AmortizableCapital { get; set; }
+    public string? Capitalization { get; set; }
+    public decimal DesgravamenInsuranceRate { get; set; }
+    public decimal VehicularInsuranceRate { get; set; }
+    public decimal Portes { get; set; }
+    public decimal DisbursementFee { get; set; }
+    public decimal NotaryExpenses { get; set; }
+    public decimal SoatAmount { get; set; }
+    public decimal OtherExpenses { get; set; }
+    public DateTime? DisbursementDate { get; set; }
+    public decimal BaseInstallment { get; set; }
+    public decimal EvaluationFee { get; set; }
+    public decimal OpportunityRate { get; set; }
+
     public List<Installment> Schedule { get; private set; } = new();
 
     protected Credit() { }

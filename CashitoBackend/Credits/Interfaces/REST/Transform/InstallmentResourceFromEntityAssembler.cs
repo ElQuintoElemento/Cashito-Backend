@@ -1,4 +1,4 @@
-﻿using CashitoBackend.Credits.Domain.Model.Entities;
+using CashitoBackend.Credits.Domain.Model.Entities;
 using CashitoBackend.Credits.Interfaces.REST.Resources;
 
 namespace CashitoBackend.Credits.Interfaces.REST.Transform;
@@ -16,7 +16,16 @@ public static class InstallmentResourceFromEntityAssembler
             i.RemainingBalance,
             i.IsPaid,
             i.PaidAt,
-            i.GetStatus().ToString()
+            i.GetStatus().ToString(),
+            i.BaseInstallment,
+            i.BeginningBalance,
+            i.DesgravamenInsurance,
+            i.VehicularInsurance,
+            i.Portes,
+            i.OtherExpenses,
+            i.CashFlow,
+            i.IsBalloon,
+            i.BalloonAmount
         );
     }
 }

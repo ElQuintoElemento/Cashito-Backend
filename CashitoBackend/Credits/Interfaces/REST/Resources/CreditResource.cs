@@ -1,4 +1,4 @@
-﻿namespace CashitoBackend.Credits.Interfaces.REST.Resources;
+namespace CashitoBackend.Credits.Interfaces.REST.Resources;
 
 public record CreditResource(
     int Id,
@@ -24,5 +24,20 @@ public record CreditResource(
     decimal Tir,
 
     string Status,
-    string PublicToken
+    string PublicToken,
+    string? Capitalization,
+    decimal DesgravamenInsuranceRate,
+    decimal VehicularInsuranceRate,
+    decimal Portes,
+    decimal DisbursementFee,
+    decimal EvaluationFee,
+    decimal NotaryExpenses,
+    decimal SoatAmount,
+    decimal OtherExpenses,
+    decimal AmortizableCapital,
+    decimal InitialPaymentPercentage,
+    decimal BalloonPaymentPercentage,
+    decimal BalloonPaymentAmount,
+    decimal BaseInstallment,
+    decimal OpportunityRate
 );

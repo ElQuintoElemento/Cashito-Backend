@@ -1,4 +1,5 @@
-﻿using CashitoBackend.Shared.Domain.Model.ValueObjects;
+using CashitoBackend.Shared.Domain.Model.ValueObjects;
+using CashitoBackend.Clients.Domain.Model.ValueObjects;
 
 namespace CashitoBackend.Clients.Domain.Model.Aggregates;
 
@@ -8,7 +9,7 @@ public class Client
 
     public int UserId { get; private set; } // dueño del cliente
 
-    public string Dni { get; private set; } = string.Empty;
+    public Dni Dni { get; private set; }
 
     public string FirstName { get; private set; } = string.Empty;
 
@@ -18,7 +19,7 @@ public class Client
     
     public Currency IncomeCurrency { get; private set; } = Currency.PEN;
 
-    public string Phone { get; private set; } = string.Empty;
+    public PhoneNumber? Phone { get; private set; }
     
     public EmailAddress Email { get; private set; }
 
@@ -43,19 +44,19 @@ public class Client
         if (string.IsNullOrWhiteSpace(firstName))
             throw new ArgumentException("Nombre es requerido");
 
-        if (monthlyIncome < 0)
-            throw new ArgumentException("Ingresos no pueden ser negativos");
+        if (monthlyIncome <= 0)
+            throw new ArgumentException("Ingresos deben ser mayores a 0");
         
         if (!Enum.IsDefined(typeof(Currency), incomeCurrency))
             throw new ArgumentException("Invalid income currency");
 
         UserId = userId;
-        Dni = dni;
+        Dni = new Dni(dni);
         FirstName = firstName;
         LastName = lastName;
         MonthlyIncome = monthlyIncome;
         IncomeCurrency = incomeCurrency;
-        Phone = phone;
+        Phone = string.IsNullOrWhiteSpace(phone) ? null : new PhoneNumber(phone);
         Email = email;
     }
 
@@ -70,14 +71,14 @@ public class Client
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Nombre es requerido");
 
-        if (monthlyIncome < 0)
-            throw new ArgumentException("Ingresos no pueden ser negativos");
+        if (monthlyIncome <= 0)
+            throw new ArgumentException("Ingresos deben ser mayores a 0");
 
         FirstName = name;
         LastName = lastName;
         MonthlyIncome = monthlyIncome;
         IncomeCurrency = incomeCurrency;
-        Phone = phone;
+        Phone = string.IsNullOrWhiteSpace(phone) ? null : new PhoneNumber(phone);
         Email = email;
     }
 }

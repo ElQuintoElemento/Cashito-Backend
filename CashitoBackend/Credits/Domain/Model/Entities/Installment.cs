@@ -1,4 +1,4 @@
-﻿using CashitoBackend.Credits.Domain.Model.Exceptions;
+using CashitoBackend.Credits.Domain.Model.Exceptions;
 using CashitoBackend.Credits.Domain.Model.ValueObjects;
 
 namespace CashitoBackend.Credits.Domain.Model.Entities;
@@ -24,6 +24,17 @@ public class Installment
     public bool IsPaid { get; private set; } = false;
 
     public DateTime? PaidAt { get; private set; }
+
+    // Missing fields added in Package 3
+    public decimal BaseInstallment { get; set; }
+    public decimal BeginningBalance { get; set; }
+    public decimal DesgravamenInsurance { get; set; }
+    public decimal VehicularInsurance { get; set; }
+    public decimal Portes { get; set; }
+    public decimal OtherExpenses { get; set; }
+    public decimal CashFlow { get; set; }
+    public bool IsBalloon { get; set; }
+    public decimal BalloonAmount { get; set; }
 
     protected Installment() { }
 
