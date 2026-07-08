@@ -77,6 +77,7 @@ public class CreditSimulationService : ICreditSimulationService
         }
 
         var schedule = new List<Installment>();
+        var indicatorOutflows = new List<decimal>();
 
         balance = capitalAmortizar;
 
@@ -148,6 +149,10 @@ public class CreditSimulationService : ICreditSimulationService
 
             bool isBalloon = false;
             decimal balloonAmount = 0;
+
+            // VAN/TIR/TCEA: outflows exclude balloon (captured before CB is added)
+            indicatorOutflows.Add(decimal.Round(-totalPayment, 2));
+
             if (i == totalPeriods)
             {
                 isBalloon = true;
@@ -181,20 +186,19 @@ public class CreditSimulationService : ICreditSimulationService
         // FLUJOS DE CAJA
         // =========================
 
-        var netDisbursed = financedAmount - command.DisbursementFee - command.EvaluationFee - command.NotaryExpenses - command.SoatAmount;
+        // VAN/TIR/TCEA: FC₀ = capitalAmortizar − upfront fees; outflows exclude balloon
+        var netDisbursedForIndicators = capitalAmortizar - command.DisbursementFee - command.EvaluationFee - command.NotaryExpenses - command.SoatAmount;
 
         var cashFlows = new List<decimal>
         {
-            netDisbursed
+            netDisbursedForIndicators
         };
 
-        cashFlows.AddRange(schedule.Select(s => s.CashFlow));
+        cashFlows.AddRange(indicatorOutflows);
 
         var tir = CalculateIRR(cashFlows);
 
-        double kAnnualDouble = (double)(command.OpportunityRate / 100m);
-        decimal monthlyOpportunityRate = (decimal)(Math.Pow(1 + kAnnualDouble, 1.0 / 12.0) - 1);
-        var van = CalculateNPV(monthlyOpportunityRate, cashFlows);
+        var van = CalculateNPV(monthlyRate, cashFlows);
 
         var tcea = (decimal)(Math.Pow(1 + (double)tir, 12) - 1) * 100;
 
@@ -214,31 +218,97 @@ public class CreditSimulationService : ICreditSimulationService
 
     private static decimal CalculateIRR(List<decimal> cashFlows)
     {
-        double guess = 0.1;
+        if (cashFlows.Count < 2)
+            return 0;
 
+        var newtonResult = TryNewtonIrr(cashFlows, 0.001);
+        if (newtonResult.HasValue && Math.Abs(CalculateNpvDouble(newtonResult.Value, cashFlows)) < 1e-4)
+            return (decimal)newtonResult.Value;
+
+        var bisectionResult = TryBisectionIrr(cashFlows);
+        if (bisectionResult.HasValue)
+            return (decimal)bisectionResult.Value;
+
+        return newtonResult.HasValue ? (decimal)newtonResult.Value : 0;
+    }
+
+    private static double? TryNewtonIrr(List<decimal> cashFlows, double guess)
+    {
         for (int i = 0; i < 100; i++)
         {
-            double npv = 0;
-            double derivative = 0;
+            var (npv, derivative) = EvaluateNpvAndDerivative(cashFlows, guess);
 
-            for (int t = 0; t < cashFlows.Count; t++)
-            {
-                npv += (double)cashFlows[t] / Math.Pow(1 + guess, t);
-
-                derivative -= t *
-                              (double)cashFlows[t] /
-                              Math.Pow(1 + guess, t + 1);
-            }
+            if (Math.Abs(derivative) < 1e-12)
+                break;
 
             var newGuess = guess - npv / derivative;
 
-            if (Math.Abs(newGuess - guess) < 1e-7)
-                break;
+            if (newGuess <= -0.999999)
+                newGuess = (guess + 0.1) / 2.0;
+
+            if (Math.Abs(newGuess - guess) < 1e-10)
+                return newGuess;
 
             guess = newGuess;
         }
 
-        return (decimal)guess;
+        return Math.Abs(CalculateNpvDouble(guess, cashFlows)) < 1e-4 ? guess : null;
+    }
+
+    private static double? TryBisectionIrr(List<decimal> cashFlows)
+    {
+        double lo = 0;
+        double hi = 1;
+        double npvLo = CalculateNpvDouble(lo, cashFlows);
+        double npvHi = CalculateNpvDouble(hi, cashFlows);
+
+        if (Math.Sign(npvLo) == Math.Sign(npvHi))
+        {
+            hi = 0.05;
+            npvHi = CalculateNpvDouble(hi, cashFlows);
+            if (Math.Sign(npvLo) == Math.Sign(npvHi))
+                return null;
+        }
+
+        for (int i = 0; i < 200; i++)
+        {
+            double mid = (lo + hi) / 2;
+            double npvMid = CalculateNpvDouble(mid, cashFlows);
+
+            if (Math.Abs(npvMid) < 1e-10 || hi - lo < 1e-12)
+                return mid;
+
+            if (Math.Sign(npvMid) == Math.Sign(npvLo))
+                lo = mid;
+            else
+                hi = mid;
+        }
+
+        return (lo + hi) / 2;
+    }
+
+    private static (double Npv, double Derivative) EvaluateNpvAndDerivative(List<decimal> cashFlows, double rate)
+    {
+        double npv = 0;
+        double derivative = 0;
+
+        for (int t = 0; t < cashFlows.Count; t++)
+        {
+            npv += (double)cashFlows[t] / Math.Pow(1 + rate, t);
+            derivative -= t * (double)cashFlows[t] / Math.Pow(1 + rate, t + 1);
+        }
+
+        return (npv, derivative);
+    }
+
+    private static double CalculateNpvDouble(double rate, List<decimal> cashFlows)
+    {
+        double npv = 0;
+
+        for (int t = 0; t < cashFlows.Count; t++)
+            npv += (double)cashFlows[t] / Math.Pow(1 + rate, t);
+
+        return npv;
     }
 
     // =========================
