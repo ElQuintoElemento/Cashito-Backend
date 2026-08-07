@@ -1,0 +1,208 @@
+using CashitoBackend.Credits.Application.Internal.DTOs;
+using CashitoBackend.Credits.Domain.Model.Aggregates;
+using CashitoBackend.Credits.Domain.Model.Commands;
+using CashitoBackend.Credits.Domain.Repositories;
+using CashitoBackend.Credits.Domain.Services;
+using CashitoBackend.Shared.Domain.Repositories;
+
+namespace CashitoBackend.Credits.Application.Internal.CommandServices;
+
+public class CreditCommandService : ICreditCommandService
+{
+    private readonly ICreditSimulationService _simulationService;
+    private readonly ICreditRepository _creditRepository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly CreditNotificationService _notificationService;
+
+    public CreditCommandService(
+        ICreditRepository creditRepository,
+        IUnitOfWork unitOfWork,
+        ICreditSimulationService simulationService,
+        CreditNotificationService notificationService)
+    {
+        _creditRepository = creditRepository;
+        _unitOfWork = unitOfWork;
+        _simulationService = simulationService;
+        _notificationService = notificationService;
+    }
+
+    // 🔹 SIMULACIÓN
+    public async Task<SimulationResult> Handle(SimulateCreditCommand command, int userId)
+    {
+        return _simulationService.Simulate(command);
+    }
+
+    // 🔹 CREAR CRÉDITO
+    public async Task<Credit> Handle(CreateCreditCommand command, int userId)
+    {
+        var simulateCommand = new SimulateCreditCommand(
+            command.ClientId,
+            command.VehicleId,
+            command.VehiclePrice,
+            command.Currency,
+            command.DownPayment,
+            command.InterestRate,
+            command.TermMonths,
+            command.RateType,
+            command.GracePeriod,
+            command.GraceType,
+            command.Insurance,
+            command.OpportunityRate,
+            command.Capitalization,
+            command.DesgravamenInsuranceRate,
+            command.VehicularInsuranceRate,
+            command.Portes,
+            command.DisbursementFee,
+            command.EvaluationFee,
+            command.NotaryExpenses,
+            command.SoatAmount,
+            command.OtherExpenses,
+            command.BalloonPaymentPercentage
+        );
+
+        var simulation = _simulationService.Simulate(simulateCommand);
+
+        var credit = new Credit(
+            userId,
+            command.ClientId,
+            command.VehicleId,
+            command.VehiclePrice,
+            command.Currency,
+            command.DownPayment,
+            command.InterestRate,
+            command.TermMonths,
+            command.RateType,
+            command.GracePeriod,
+            command.GraceType,
+            command.Insurance
+        );
+        credit.Capitalization = command.Capitalization;
+        credit.DesgravamenInsuranceRate = command.DesgravamenInsuranceRate;
+        credit.VehicularInsuranceRate = command.VehicularInsuranceRate;
+        credit.Portes = command.Portes;
+        credit.DisbursementFee = command.DisbursementFee;
+        credit.EvaluationFee = command.EvaluationFee;
+        credit.NotaryExpenses = command.NotaryExpenses;
+        credit.SoatAmount = command.SoatAmount;
+        credit.OtherExpenses = command.OtherExpenses;
+        credit.OpportunityRate = command.OpportunityRate;
+
+        credit.InitialPaymentPercentage = command.VehiclePrice > 0 ? (command.DownPayment / command.VehiclePrice) * 100m : 0;
+        credit.BalloonPaymentPercentage = command.BalloonPaymentPercentage;
+        credit.BalloonPaymentAmount = command.VehiclePrice * (command.BalloonPaymentPercentage / 100m);
+        credit.AmortizableCapital = (command.VehiclePrice - command.DownPayment) - credit.BalloonPaymentAmount;
+        credit.BaseInstallment = simulation.Installments.Count > 0 ? simulation.Installments[0].BaseInstallment : 0;
+
+        credit.SetResults(simulation.Tcea, simulation.Van, simulation.Tir);
+        credit.SetSchedule(simulation.Installments);
+
+        await _creditRepository.AddAsync(credit);
+        await _unitOfWork.CompleteAsync();
+
+        return credit;
+    }
+
+    // 🔹 APPROVE
+    public async Task<bool> Approve(int creditId, int userId)
+    {
+        var credit = await _creditRepository.FindByIdAsync(creditId);
+
+        if (credit == null || credit.UserId != userId)
+            return false;
+
+        credit.Approve();
+
+        _creditRepository.Update(credit);
+        await _unitOfWork.CompleteAsync();
+        await _notificationService.OnCreditApprovedAsync(credit);
+
+        return true;
+    }
+
+    // 🔹 ACTIVATE
+    public async Task<bool> Activate(int creditId, int userId)
+    {
+        var credit = await _creditRepository.FindByIdAsync(creditId);
+
+        if (credit == null || credit.UserId != userId)
+            return false;
+
+        credit.Activate();
+
+        _creditRepository.Update(credit);
+        await _unitOfWork.CompleteAsync();
+
+        return true;
+    }
+
+    // 🔹 REJECT
+    public async Task<bool> Reject(int creditId, int userId)
+    {
+        var credit = await _creditRepository.FindByIdAsync(creditId);
+
+        if (credit == null || credit.UserId != userId)
+            return false;
+
+        credit.Reject();
+
+        _creditRepository.Update(credit);
+        await _unitOfWork.CompleteAsync();
+        await _notificationService.OnCreditRejectedAsync(credit);
+
+        return true;
+    }
+
+    // 🔹 COMPLETE
+    public async Task<bool> Complete(int creditId, int userId)
+    {
+        var credit = await _creditRepository.FindByIdAsync(creditId);
+
+        if (credit == null || credit.UserId != userId)
+            return false;
+
+        credit.Complete();
+
+        _creditRepository.Update(credit);
+        await _unitOfWork.CompleteAsync();
+        await _notificationService.OnCreditCompletedAsync(credit);
+
+        return true;
+    }
+
+    // 🔹 PAGAR CUOTA
+    public async Task<bool> PayInstallment(int creditId, int installmentNumber, int userId)
+    {
+        var credit = await _creditRepository.FindByIdWithScheduleAsync(creditId);
+
+        if (credit == null || credit.UserId != userId)
+            return false;
+
+        var paidInstallment = credit.Schedule.FirstOrDefault(i => i.Number == installmentNumber);
+        credit.PayInstallment(installmentNumber);
+
+        _creditRepository.Update(credit);
+        await _unitOfWork.CompleteAsync();
+
+        var amount = paidInstallment?.TotalPayment ?? 0;
+        await _notificationService.OnInstallmentPaidAsync(credit, installmentNumber, amount);
+
+        if (credit.Schedule.All(i => i.IsPaid))
+            await _notificationService.OnCreditCompletedAsync(credit);
+
+        return true;
+    }
+
+    // 🔹 DELETE
+    public async Task<bool> Delete(int creditId, int userId)
+    {
+        var credit = await _creditRepository.FindByIdAsync(creditId);
+
+        if (credit == null || credit.UserId != userId)
+            return false;
+
+        _creditRepository.Remove(credit);
+        await _unitOfWork.CompleteAsync();
+
+        return true;
+    }
+}

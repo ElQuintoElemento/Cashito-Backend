@@ -1,0 +1,96 @@
+using CashitoBackend.Shared.Domain.Repositories;
+using CashitoBackend.Vehicles.Domain.Model.Aggregates;
+using CashitoBackend.Vehicles.Domain.Model.Commands;
+using CashitoBackend.Vehicles.Domain.Repositories;
+using CashitoBackend.Vehicles.Domain.Services;
+using CashitoBackend.Shared.Domain.Exceptions;
+
+namespace CashitoBackend.Vehicles.Application.Internal.CommandServices;
+
+public class VehicleCommandService : IVehicleCommandService
+{
+    private readonly IVehicleRepository _vehicleRepository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public VehicleCommandService(
+        IVehicleRepository vehicleRepository,
+        IUnitOfWork unitOfWork)
+    {
+        _vehicleRepository = vehicleRepository;
+        _unitOfWork = unitOfWork;
+    }
+    
+    public async Task<Vehicle> Handle(CreateVehicleCommand command, int userId)
+    {
+        Vehicle vehicle;
+        try
+        {
+            vehicle = new Vehicle(
+                userId,
+                command.Brand,
+                command.Model,
+                command.Price,
+                command.Currency,
+                command.Year,
+                command.Type
+            );
+        }
+        catch (Exception ex)
+        {
+            throw new BadRequestException(ex.Message);
+        }
+
+        await _vehicleRepository.AddAsync(vehicle);
+        await _unitOfWork.CompleteAsync();
+
+        return vehicle;
+    }
+    
+    public async Task<Vehicle?> Handle(UpdateVehicleCommand command, int userId)
+    {
+        var vehicle = await _vehicleRepository.FindByIdAsync(command.Id);
+
+        if (vehicle == null)
+            return null;
+
+        if (vehicle.UserId != userId)
+            throw new UnauthorizedAccessException("Not allowed");
+
+        try
+        {
+            vehicle.Update(
+                command.Brand,
+                command.Model,
+                command.Price,
+                command.Currency,
+                command.Year,
+                command.Type
+            );
+        }
+        catch (Exception ex)
+        {
+            throw new BadRequestException(ex.Message);
+        }
+
+        _vehicleRepository.Update(vehicle);
+        await _unitOfWork.CompleteAsync();
+
+        return vehicle;
+    }
+    
+    public async Task<bool> Handle(DeleteVehicleCommand command, int userId)
+    {
+        var vehicle = await _vehicleRepository.FindByIdAsync(command.Id);
+
+        if (vehicle == null)
+            return false;
+
+        if (vehicle.UserId != userId)
+            throw new UnauthorizedAccessException("Not allowed");
+
+        _vehicleRepository.Remove(vehicle);
+        await _unitOfWork.CompleteAsync();
+
+        return true;
+    }
+}

@@ -4,6 +4,5 @@ public record UserResource(
     int Id,
     string Username,
     string? FullName,
-    string? Email,
-    IEnumerable<string> Roles
+    string? Email
 );

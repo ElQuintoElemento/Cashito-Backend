@@ -32,19 +32,9 @@ public interface IUserCommandService
     Task<User> Handle(SignUpCommand command);
 
     /// <summary>
-    ///     Handle create user command (admin creates another user)
-    /// </summary>
-    Task<User> Handle(CreateUserCommand command);
-
-    /// <summary>
     ///     Handle update user command
     /// </summary>
     Task<User> Handle(UpdateUserCommand command);
-
-    /// <summary>
-    ///     Handle delete user command (soft-delete/deactivate)
-    /// </summary>
-    Task<User> Handle(DeleteUserCommand command);
     
     Task<User> Handle(ChangePasswordCommand command);
 }

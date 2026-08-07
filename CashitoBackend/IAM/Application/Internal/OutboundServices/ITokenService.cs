@@ -1,5 +1,5 @@
 using CashitoBackend.IAM.Domain.Model.Aggregates;
-using CashitoBackend.IAM.Domain.Model.Entities;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace CashitoBackend.IAM.Application.Internal.OutboundServices;
 
@@ -27,7 +27,7 @@ public interface ITokenService
      *     Validate a JWT token
      * </summary>
      * <param name="token">The token to validate</param>
-     * <returns>The user id if the token is valid, null otherwise</returns>
+     * <returns>The JWT</returns>
      */
-    Task<int?> ValidateToken(string token);
+    Task<JsonWebToken?> ValidateToken(string token);
 }

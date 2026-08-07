@@ -19,16 +19,9 @@ public class TokenService(IOptions<TokenSettings> tokenSettings) : ITokenService
 
         var identity = new ClaimsIdentity(new[]
         {
-            new Claim(ClaimTypes.Sid, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Username)
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.UniqueName, user.Username)
         });
-
-        // roles
-        identity.AddClaims(
-            user.Roles.Select(r =>
-                new Claim(ClaimTypes.Role, r.Name.ToString())
-            )
-        );
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
@@ -43,7 +36,7 @@ public class TokenService(IOptions<TokenSettings> tokenSettings) : ITokenService
         return new JsonWebTokenHandler().CreateToken(tokenDescriptor);
     }
 
-    public async Task<int?> ValidateToken(string token)
+    public async Task<JsonWebToken?> ValidateToken(string token)
     {
         if (string.IsNullOrWhiteSpace(token))
             return null;
@@ -64,13 +57,7 @@ public class TokenService(IOptions<TokenSettings> tokenSettings) : ITokenService
                 }
             );
 
-            var jwt = (JsonWebToken)result.SecurityToken;
-
-            var userId = jwt.Claims
-                .First(x => x.Type == ClaimTypes.Sid)
-                .Value;
-
-            return int.Parse(userId);
+            return (JsonWebToken)result.SecurityToken;
         }
         catch
         {

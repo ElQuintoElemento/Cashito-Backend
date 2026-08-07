@@ -1,12 +1,10 @@
-using System.Linq;
 using CashitoBackend.IAM.Application.Internal.OutboundServices;
 using CashitoBackend.IAM.Domain.Model.Aggregates;
 using CashitoBackend.IAM.Domain.Model.Commands;
 using CashitoBackend.IAM.Domain.Repositories;
 using CashitoBackend.IAM.Domain.Services;
+using CashitoBackend.Shared.Domain.Exceptions;
 using CashitoBackend.Shared.Domain.Repositories;
-using CashitoBackend.IAM.Domain.Model.Entities;
-using CashitoBackend.IAM.Domain.Model.ValueObjects;
 using CashitoBackend.Shared.Domain.Model.ValueObjects;
 
 namespace CashitoBackend.IAM.Application.Internal.CommandServices;
@@ -21,7 +19,6 @@ namespace CashitoBackend.IAM.Application.Internal.CommandServices;
  */
 public class UserCommandService(
     IUserRepository userRepository,
-    IRoleRepository roleRepository,
     ITokenService tokenService,
     IHashingService hashingService,
     IUnitOfWork unitOfWork
@@ -39,7 +36,7 @@ public class UserCommandService(
         var user = await userRepository.FindByUsernameAsync(command.Username);
 
         if (user == null || !hashingService.VerifyPassword(command.Password, user.PasswordHash))
-            throw new Exception("Invalid username or password");
+            throw new BadRequestException("Invalid username or password");
 
         var token = tokenService.GenerateToken(user);
 
@@ -55,71 +52,36 @@ public class UserCommandService(
      */
     public async Task<User> Handle(SignUpCommand command)
     {
+        if (string.IsNullOrWhiteSpace(command.Username) || command.Username.Length < 4)
+            throw new BadRequestException("Username must be at least 4 characters long");
+
+        if (string.IsNullOrWhiteSpace(command.Password) || command.Password.Length < 8)
+            throw new BadRequestException("Password must be at least 8 characters long");
+
         if (userRepository.ExistsByUsername(command.Username))
-            throw new Exception("Username already exists");
+            throw new BadRequestException("Username already exists");
+
+        var emailVo = new EmailAddress(command.Email);
+        if (await userRepository.ExistsByEmailAsync(emailVo))
+            throw new BadRequestException("Email address already exists");
 
         var passwordHash = hashingService.HashPassword(command.Password);
 
         var user = new User(command.Username, passwordHash)
-            .UpdatePersonalInfo(command.FirstName, command.LastName, new EmailAddress(command.Email));
-
-        var role = await roleRepository.FindByNameAsync(nameof(Roles.User));
-
-        if (role == null)
-        {
-            role = new Role(Roles.User);
-            await roleRepository.AddAsync(role);
-        }
-
-        user.AddRole(role);
+            .UpdatePersonalInfo(command.FirstName, command.LastName, emailVo);
+        
 
         await userRepository.AddAsync(user);
         await unitOfWork.CompleteAsync();
 
         return user;
     }
-
-    public async Task<User> Handle(CreateUserCommand command)
-    {
-        if (userRepository.ExistsByUsername(command.Username))
-            throw new Exception("Username already exists");
-
-        var user = new User(
-            command.Username,
-            hashingService.HashPassword(command.Password)
-        ).UpdatePersonalInfo(
-            command.FirstName,
-            command.LastName,
-            new EmailAddress(command.Email)
-        );
-
-        var roles = new List<Role>();
-
-        foreach (var roleName in command.Roles)
-        {
-            var role = await roleRepository.FindByNameAsync(roleName);
-
-            if (role == null)
-            {
-                role = new Role(Enum.Parse<Roles>(roleName, true));
-                await roleRepository.AddAsync(role);
-            }
-
-            roles.Add(role);
-        }
-
-        user.AddRoles(roles);
-
-        await userRepository.AddAsync(user);
-        await unitOfWork.CompleteAsync();
-
-        return user;
-    }
+    
 
     public async Task<User> Handle(UpdateUserCommand command)
     {
         var user = await userRepository.FindByIdAsync(command.UserId)
-                   ?? throw new Exception("User not found");
+                   ?? throw new NotFoundException("User not found");
 
         user.UpdatePersonalInfo(
             command.FirstName,
@@ -131,26 +93,18 @@ public class UserCommandService(
 
         return user;
     }
-
-    public async Task<User> Handle(DeleteUserCommand command)
-    {
-        var user = await userRepository.FindByIdAsync(command.UserId)
-                   ?? throw new Exception("User not found");
-
-        user.Deactivate();
-
-        await unitOfWork.CompleteAsync();
-
-        return user;
-    }
+    
     
     public async Task<User> Handle(ChangePasswordCommand command)
     {
         var user = await userRepository.FindByIdAsync(command.UserId)
-                   ?? throw new Exception("User not found");
+                   ?? throw new NotFoundException("User not found");
 
         if (!hashingService.VerifyPassword(command.CurrentPassword, user.PasswordHash))
-            throw new Exception("Current password is incorrect");
+            throw new BadRequestException("Current password is incorrect");
+
+        if (string.IsNullOrWhiteSpace(command.NewPassword) || command.NewPassword.Length < 8)
+            throw new BadRequestException("New password must be at least 8 characters long");
 
         var newHash = hashingService.HashPassword(command.NewPassword);
 

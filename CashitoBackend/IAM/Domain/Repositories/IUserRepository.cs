@@ -1,5 +1,6 @@
 using CashitoBackend.IAM.Domain.Model.Aggregates;
 using CashitoBackend.Shared.Domain.Repositories;
+using CashitoBackend.Shared.Domain.Model.ValueObjects;
 
 namespace CashitoBackend.IAM.Domain.Repositories;
 
@@ -31,4 +32,12 @@ public interface IUserRepository : IBaseRepository<User>
      */
     bool ExistsByUsername(string username);
 
+    /**
+     * <summary>
+     *     Check if a user exists by email
+     * </summary>
+     * <param name="email">The email to search</param>
+     * <returns>True if the user exists, false otherwise</returns>
+     */
+    Task<bool> ExistsByEmailAsync(EmailAddress email);
 }

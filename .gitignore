@@ -1,0 +1,84 @@
+# =========================
+# Build results
+# =========================
+bin/
+obj/
+out/
+
+# =========================
+# User-specific files
+# =========================
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# =========================
+# Rider / IntelliJ
+# =========================
+.idea/
+*.sln.iml
+
+# =========================
+# VS Code
+# =========================
+.vscode/
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# NuGet
+# =========================
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# =========================
+# Build caches
+# =========================
+*.cache
+*.pdb
+*.mdb
+
+# =========================
+# Generated files
+# =========================
+*.g.cs
+*.generated.cs
+
+# =========================
+# Test results
+# =========================
+TestResults/
+*.trx
+
+# =========================
+# Environment files
+# =========================
+.env
+.env.*
+
+# =========================
+# Rider extra (lo que ya tenías)
+# =========================
+/shelf/
+/workspace.xml
+/modules.xml
+/projectSettingsUpdater.xml
+/contentModel.xml
+/httpRequests/
+/dataSources/
+/dataSources.local.xml
+
+**/bin/
+**/obj/

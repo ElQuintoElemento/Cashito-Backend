@@ -1,9 +1,27 @@
+using CashitoBackend.Clients.Application.Internal.CommandServices;
+using CashitoBackend.Clients.Application.Internal.QueryServices;
+using CashitoBackend.Clients.Domain.Repositories;
+using CashitoBackend.Clients.Domain.Services;
+using CashitoBackend.Clients.Infrastructure.Persistence.EFC.Repositories;
+using CashitoBackend.Credits.Application.Internal.CommandServices;
+using CashitoBackend.Credits.Application.Internal.QueryServices;
+using CashitoBackend.Dashboard.Application.Internal.QueryServices;
+using CashitoBackend.Dashboard.Domain.Services;
+using CashitoBackend.Notifications.Application.Internal.CommandServices;
+using CashitoBackend.Notifications.Application.Internal.QueryServices;
+using CashitoBackend.Notifications.Domain.Repositories;
+using CashitoBackend.Notifications.Domain.Services;
+using CashitoBackend.Notifications.Infrastructure.Persistence.EFC.Repositories;
+using CashitoBackend.Credits.Domain.Repositories;
+using CashitoBackend.Credits.Domain.Services;
+using CashitoBackend.Credits.Infrastructure.Persistence.EFC.Repositories;
 using CashitoBackend.IAM.Application.Internal.CommandServices;
-using CashitoBackend.IAM.Application.Internal.EventHandlers;
 using CashitoBackend.IAM.Application.Internal.OutboundServices;
 using CashitoBackend.IAM.Application.Internal.QueryServices;
 using CashitoBackend.IAM.Domain.Repositories;
 using CashitoBackend.IAM.Domain.Services;
+using CashitoBackend.IAM.Infrastructure.Email.Configuration;
+using CashitoBackend.IAM.Infrastructure.Email.Services;
 using CashitoBackend.IAM.Infrastructure.Hashing.BCrypt.Services;
 using CashitoBackend.IAM.Infrastructure.Persistence.EFC.Repositories;
 using CashitoBackend.IAM.Infrastructure.Pipeline.Middleware.Extensions;
@@ -18,6 +36,11 @@ using CashitoBackend.Shared.Infrastructure.Interfaces.ASP.Configuration;
 using CashitoBackend.Shared.Infrastructure.Interfaces.ASP.Middleware;
 using CashitoBackend.Shared.Infrastructure.Persistence.EFC.Configuration;
 using CashitoBackend.Shared.Infrastructure.Persistence.EFC.Repositories;
+using CashitoBackend.Vehicles.Application.Internal.CommandServices;
+using CashitoBackend.Vehicles.Application.Internal.QueryServices;
+using CashitoBackend.Vehicles.Domain.Repositories;
+using CashitoBackend.Vehicles.Domain.Services;
+using CashitoBackend.Vehicles.Infrastructure.Persistence.EFC.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -119,6 +142,34 @@ builder.Services.AddSwaggerGen(options =>
 
 // Dependency Injection
 
+// Clients Bounded Context
+
+builder.Services.AddScoped<IClientRepository, ClientRepository>();
+builder.Services.AddScoped<IClientCommandService, ClientCommandService>();
+builder.Services.AddScoped<IClientQueryService, ClientQueryService>();
+
+// Vehicles Bounded Context
+builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+builder.Services.AddScoped<IVehicleCommandService, VehicleCommandService>();
+builder.Services.AddScoped<IVehicleQueryService, VehicleQueryService>();
+
+// Credits Bounded Context
+builder.Services.AddScoped<ICreditRepository, CreditRepository>();
+builder.Services.AddScoped<ICreditCommandService, CreditCommandService>();
+builder.Services.AddScoped<ICreditQueryService, CreditQueryService>();
+builder.Services.AddScoped<ICreditSimulationService, CreditSimulationService>();
+builder.Services.AddScoped<CreditNotificationService>();
+builder.Services.AddScoped<ICreditPublicService, CreditPublicService>();
+builder.Services.AddScoped<ICreditExportService, CreditExportService>();
+
+// Dashboard Bounded Context
+builder.Services.AddScoped<IDashboardQueryService, DashboardQueryService>();
+
+// Notifications Bounded Context
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<INotificationCommandService, NotificationCommandService>();
+builder.Services.AddScoped<INotificationQueryService, NotificationQueryService>();
+
 // Shared Bounded Context
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -129,18 +180,18 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // TokenSettings Configuration
 
 builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("TokenSettings"));
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserCommandService, UserCommandService>();
 builder.Services.AddScoped<IUserQueryService, UserQueryService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IHashingService, HashingService>();
 builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
-builder.Services.AddScoped<IRoleCommandService, RoleCommandService>();
-builder.Services.AddScoped<IRoleQueryService, RoleQueryService>();
-builder.Services.AddHostedService<SeedRolesHostedService>();
 
+// Initialize QuestPDF License
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 // ───────────── Build & DB ensure ─────────────a
 var app = builder.Build();
@@ -150,6 +201,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
 }
+
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 // ───────────── HTTP pipeline ─────────────
 app.UseSwagger();
@@ -166,8 +219,6 @@ app.UseRequestAuthorization();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 app.MapControllers();
 app.Run();
